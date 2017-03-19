@@ -1,0 +1,63 @@
+import numpy as np
+import cv2
+print cv2.__version__
+
+def show(t, img):
+    cv2.imshow(t, img)
+    cv2.waitKey(0)
+
+def contour_aspectratio(c):
+    x, y, w, h = cv2.boundingRect(c)
+    aspect_ratio = float(w) / h
+    return aspect_ratio
+
+def detect_borders():
+    im00 = cv2.imread('img/screen1.png')
+    im0 = cv2.imread('img/screen1.png',0)
+    im1 = im0.copy()
+    im1[im1 == 0] = 255
+    im1[im1 < 255] = 0
+    #show('input', im0)
+    #show('border thresholding', im1)
+
+    kernel = np.ones((2, 2), np.uint8)
+    erosion = cv2.erode(im1, kernel, iterations=1)
+    canny = cv2.Canny(erosion, 100, 200)
+
+    show('canny', canny)
+    #show('erosion', erosion)
+
+    imc, contours, hierarchy = cv2.findContours(canny, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # simple: only corners
+    show('contours', imc)
+
+    candidatecontours = []
+
+    for idx, vec in enumerate(contours):
+        # card aspect ratio uprighg ~ 0.71
+        aspect_ratio = contour_aspectratio(vec)
+        #print idx, aspect_ratio, len(vec)
+        if  (aspect_ratio > 0.68 and aspect_ratio < 0.74):
+            parentidx = hierarchy[0][idx][3]
+            parent_contour = contours[parentidx]
+            parent_aspect_ratio = contour_aspectratio(parent_contour)
+
+            if parentidx == -1:
+                candidatecontours.append(vec)
+            #if (parent_aspect_ratio > 0.68 and parent_aspect_ratio < 0.74):
+             #   candidatecontours.append(vec)
+
+
+    i3 = cv2.drawContours(im00, candidatecontours, -1, (0, 255, 255), 1)
+    # i3 = cv2.drawContours(im00, contours, 334, (0, 255, 255), 1)
+    # i4 = cv2.drawContours(i3, contours, 335, (0, 255, 255), 1)
+    # i5 = cv2.drawContours(i4, contours, 336, (0, 255, 255), 1)
+    show('contours', i3)
+
+    cv2.destroyAllWindows()
+
+def main():
+    detect_borders()
+
+
+if __name__ == '__main__':
+    main()

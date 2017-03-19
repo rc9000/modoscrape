@@ -1,0 +1,45 @@
+import numpy as np
+import cv2
+print cv2.__version__
+
+def show(t, img):
+    cv2.imshow(t, img)
+    cv2.waitKey(0)
+
+def detect_borders():
+    im00 = cv2.imread('img/screen1.png')
+    im0 = cv2.imread('img/screen1.png',0)
+    im1 = im0.copy()
+    im1[im1 == 0] = 255
+    im1[im1 < 255] = 0
+    #show('input', im0)
+    #show('border thresholding', im1)
+
+    kernel = np.ones((2, 2), np.uint8)
+    erosion = cv2.erode(im1, kernel, iterations=1)
+
+
+    imc, contours, hierarchy = cv2.findContours(erosion, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # simple: only corners
+
+    candidatecontours = []
+
+    for idx, vec in enumerate(contours):
+        # card aspect ratio uprighg ~ 0.71
+        x, y, w, h = cv2.boundingRect(vec)
+        aspect_ratio = float(w) / h
+        print idx, aspect_ratio, len(vec)
+        if  (aspect_ratio > 0.68 and aspect_ratio < 0.74):
+            candidatecontours.append(vec)
+
+
+    i3 = cv2.drawContours(im00, candidatecontours, -1, (0, 255, 255), 1)
+    show('contours', i3)
+
+    cv2.destroyAllWindows()
+
+def main():
+    detect_borders()
+
+
+if __name__ == '__main__':
+    main()

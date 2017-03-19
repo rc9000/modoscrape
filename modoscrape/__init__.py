@@ -6,7 +6,7 @@ class Locator:
     def __init__(self):
         self.ASPECT_MIN = 0.68
         self.ASPECT_MAX = 0.74
-        self.AREA_MIN = 30
+        self.AREA_MIN = 300
 
     def show(self, t, img):
         cv2.imshow(t, img)
@@ -21,6 +21,10 @@ class Locator:
         x, y, w, h = cv2.boundingRect(c)
         area = float(w) * h
         return area
+
+    def contour_center(self, c):
+        x, y, w, h = cv2.boundingRect(c)
+        return [int((x + w) / 2), int((y + h) / 2)]
 
     def detect_borders(self, cv2im):
         #im00 = cv2.imread('img/screen1.png')
@@ -64,7 +68,7 @@ class Locator:
 
                     # if (parent_aspect_ratio > 0.68 and parent_aspect_ratio < 0.74):
                     #   candidatecontours.append(vec)
-        print len(candidatecontours), " candidates"
+        #print len(candidatecontours), " candidates"
 
         # now go through all contours and only add these that are not enclosed in antoher one
         for idxi, veci in enumerate(candidatecontours):
@@ -85,10 +89,11 @@ class Locator:
             if add:
                 prunedcandidatecontours.append(veci)
 
-        i3 = cv2.drawContours(im00, prunedcandidatecontours, -1, (0, 255, 255), 1)
+
+        #i3 = cv2.drawContours(im00, prunedcandidatecontours, -1, (0, 255, 255), 1)
         #show('candidate_contours', i3)
         #cv2.destroyAllWindows()
-        return i3
+        return prunedcandidatecontours
 
     def union(self, a, b):
         x = min(a[0], b[0])

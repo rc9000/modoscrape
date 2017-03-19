@@ -9,7 +9,7 @@ FONTCOLOR = (255, 255, 255)
 
 while(True):
 
-     # Wide QXGA 2560x1600 left half
+     # capture happens in the top left SXGA corner
      bbox = (0, 0, 1280, 1024)
 
      pilgrab =  ImageGrab.grab(bbox)

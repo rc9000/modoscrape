@@ -9,7 +9,7 @@ FONTCOLOR = (255, 255, 255)
 
 while(True):
 
-     # capture happens in the top left SXGA corner
+     # modo client in this top left corner
      bbox = (0, 0, 1280, 1024)
 
      pilgrab =  ImageGrab.grab(bbox)

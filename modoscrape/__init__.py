@@ -71,31 +71,36 @@ class ClickableLocator:
         else:
             return False
 
-    def clickable_loc(self, bgr):
+    def clickable_loc(self, bgr, rangehint):
         im0 = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
         imdebug = bgr.copy()
-        #Tools.show('gray', im0)
+        Tools.show('gray', im0)
 
-        # vertical, horizontal main active borders (hand)
-        thresh_h = cv2.inRange(im0, 180, 184)
-        thresh_v = cv2.inRange(im0, 198, 202)
+        rangematches = []
 
-        # vertical, horizontal main active borders (battlefield our side)
-        thresh_h_bfo = cv2.inRange(im0, 208, 212)
-        thresh_v_bfo = cv2.inRange(im0, 205, 209)
+        if rangehint == 'hand':
+            # vertical, horizontal main active borders (hand)
+            rangematches.append(cv2.inRange(im0, 180, 184))
+            rangematches.append(cv2.inRange(im0, 198, 202))
 
-        # vertical, horizontal main active borders (battlefield our side)
-        thresh_h_bfo2 = cv2.inRange(im0, 225, 229)
-        thresh_v_bfo2 = cv2.inRange(im0, 220, 224)
+        if rangehint == 'battlefield':
+            rangematches.append(cv2.inRange(im0, 208, 212))
+            rangematches.append(cv2.inRange(im0, 219, 224))
+            rangematches.append(cv2.inRange(im0, 214, 218))
+            rangematches.append(cv2.inRange(im0, 205, 209))
 
-        im1 =  thresh_h + thresh_v + thresh_h_bfo + thresh_v_bfo  + thresh_h_bfo2 + thresh_v_bfo2
+        if rangehint == 'attackers':
+            rangematches.append(cv2.inRange(im0, 225, 229))
+            rangematches.append(cv2.inRange(im0, 220, 224 ))
+
+        im1 = sum(rangematches)
         Tools.show('binarized' , im1)
 
         # morphological op to enhance lines of min length
-        vk = np.ones((1, int(self.c.CLIENT_WIDTH * 0.025)), np.uint8)
+        vk = np.ones((1, int(self.c.CLIENT_WIDTH * 0.022)), np.uint8)
         erosion_vertical = cv2.erode(im1, vk, iterations=1)
         print
-        hk = np.ones((int(self.c.CLIENT_WIDTH * 0.025), 1), np.uint8)
+        hk = np.ones((int(self.c.CLIENT_WIDTH * 0.022), 1), np.uint8)
         erosion_horizontal = cv2.erode(im1, hk, iterations=1)
         im2 = erosion_vertical + erosion_horizontal
 
@@ -113,12 +118,15 @@ class ClickableLocator:
         for idx, vec in enumerate(contours):
             aspect_ratio = Tools.contour_aspectratio(vec)
             x, y, w, h = cv2.boundingRect(vec)
-            if aspect_ratio > 50 and w > (self.c.CLIENT_WIDTH * 0.03):
+            if aspect_ratio > 34 and w > (self.c.CLIENT_WIDTH * 0.03):
                 print "contour ", idx, " looks like a top/bottom border.", aspect_ratio, w, x, y
                 candidatecontours.append(vec)
             else:
                 print "contour ", idx, " skipped", aspect_ratio, w, x, y
                 pass
+
+        if self.debug:
+            cv2.drawContours(bgr, candidatecontours, -1, (255, 20, 20), 4)
 
         click_points = []
         for idx, vec in enumerate(candidatecontours):

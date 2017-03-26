@@ -40,9 +40,10 @@ while (True):
             Tools.text(numpygrab, 'b_' + b, bx + 7, by - 7)
             boffset += 1
 
-    points = cl.clickable_loc(numpygrab)
-    for i, p in enumerate(points):
-        Tools.text(numpygrab, 'c_' + str(i), p[0], p[1])
+    for t in ['hand', 'battlefield', 'attackers']:
+        points = cl.clickable_loc(numpygrab, t)
+        for i, p in enumerate(points):
+            Tools.text(numpygrab, t[0:2] + str(i), p[0], p[1])
 
     cv2.imshow('client capture', numpygrab)
 

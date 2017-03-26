@@ -1,8 +1,7 @@
 # modoscrape
 
-This is a quick, work-in-progress cv2 prototype of a screenscraper for MTGO. It's very incomplete but it can identify individual cards on the battlefield.
+This is a quick, work-in-progress cv2 prototype of a screenscraper/scriptable controller for MTGO. It's very incomplete but it can identify some cards and buttons the player could interact with.
 
-While the program is running, the client is expected in the top left screen corner, sized to about 1280x1024
+This is a just for fun project and not intended for public use, but feel free to do with it what you want.
 
-# screenshot
-![live capture](https://raw.githubusercontent.com/rc9000/modoscrape/master/img/demo.PNG)
+MTGO etc. are trademarks of WOTC.

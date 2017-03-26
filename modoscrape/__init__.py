@@ -1,12 +1,97 @@
 import numpy as np
 import cv2
 
-class Locator:
 
+class Config:
     def __init__(self):
         self.ASPECT_MIN = 0.68
         self.ASPECT_MAX = 0.74
         self.AREA_MIN = 300
+        self.CLIENT_WIDTH = 1920
+        self.CLIENT_HEIGHT = 1080
+        self.CLIENT_X = 0
+        self.CLIENT_Y = 0
+
+
+class Tools:
+
+    @staticmethod
+    def show(t, img):
+        cv2.imshow(t, img)
+        cv2.waitKey(0)
+
+
+class DialogueLocator:
+
+    def __init__(self):
+        self.c = Config()
+
+    def dialogue_loc(self, bgr, button):
+
+        # only use left 25% of screen, all buttons are there - quicker matching
+        # NOTE: its img[y: y + h, x: x + w]
+        bgrslice = bgr[0:self.c.CLIENT_HEIGHT, 0:int(self.c.CLIENT_WIDTH / 3)]
+        img = cv2.cvtColor(bgrslice, cv2.COLOR_BGR2GRAY)
+        templatefile = './img/template_' + button + '.png'
+
+        template = cv2.imread(templatefile, cv2.IMREAD_GRAYSCALE)
+        w, h = template.shape[::-1]
+
+        res = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+        top_left = max_loc
+        #print button, " max val ", max_val, " at loc ", max_loc
+        #Tools.show('tm_coeff_normed', res)
+
+        if (max_val > 0.999):
+            return max_loc
+        else:
+            return False
+
+    # HSV based color segmentation
+    # def dialogue_center00(self, bgr):
+    #
+    #     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+    #     lower_blue = np.array([110, 50, 50])
+    #     upper_blue = np.array([130, 255, 255])
+    #     mask = cv2.inRange(hsv, lower_blue, upper_blue)
+    #     res = cv2.bitwise_and(bgr, bgr, mask=mask)
+    #
+    #     Tools.show('blues', res)
+    #     return []
+
+
+class ClickableLocator:
+
+    def __init__(self):
+        self.c = Config()
+
+    def dialogue_loc(self, bgr, button):
+
+        # only use left 25% of screen, all buttons are there - quicker matching
+        # NOTE: its img[y: y + h, x: x + w]
+        bgrslice = bgr[0:self.c.CLIENT_HEIGHT, 0:int(self.c.CLIENT_WIDTH / 3)]
+        img = cv2.cvtColor(bgrslice, cv2.COLOR_BGR2GRAY)
+        templatefile = './img/template_' + button + '.png'
+
+        template = cv2.imread(templatefile, cv2.IMREAD_GRAYSCALE)
+        w, h = template.shape[::-1]
+
+        res = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+        top_left = max_loc
+        #print button, " max val ", max_val, " at loc ", max_loc
+        #Tools.show('tm_coeff_normed', res)
+
+        if (max_val > 0.999):
+            return max_loc
+        else:
+            return False
+
+class RatioLocator:
+
+    def __init__(self):
+        self.c = Config()
 
     def show(self, t, img):
         cv2.imshow(t, img)
@@ -53,7 +138,7 @@ class Locator:
             # card aspect ratio uprighg ~ 0.71
             aspect_ratio = self.contour_aspectratio(vec)
 
-            if self.aspect_ratio_test(aspect_ratio) and self.contour_area(vec) > self.AREA_MIN:
+            if self.aspect_ratio_test(aspect_ratio) and self.contour_area(vec) > self.c.AREA_MIN:
                 bbox = cv2.boundingRect(vec)
                 add = True
                 for idxc, vecc in enumerate(candidatecontours):
@@ -103,10 +188,10 @@ class Locator:
         return (x, y, w, h)
 
     def aspect_ratio_test(self, aspect_ratio):
-        if (aspect_ratio > self.ASPECT_MIN and aspect_ratio < self.ASPECT_MAX):
+        if (aspect_ratio > self.c.ASPECT_MIN and aspect_ratio < self.c.ASPECT_MAX):
             # upright card fully visible
             return True
-        elif (aspect_ratio < 1 / self.ASPECT_MIN and aspect_ratio > 1 / self.ASPECT_MAX):
+        elif (aspect_ratio < 1 / self.c.ASPECT_MIN and aspect_ratio > 1 / self.c.ASPECT_MAX):
             # tapped card fully visible
             return True
         else:

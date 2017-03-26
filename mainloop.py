@@ -4,17 +4,20 @@ import cv2
 import modoscrape
 import time
 import calendar
+from modoscrape import Tools
 
 FONT = cv2.FONT_HERSHEY_COMPLEX
 PAD = 7
-FONTCOLOR = (255, 255, 255)
-FONTCOLOR2 = (0, 0, 0)
+FONTCOLOR = (0, 0, 0)
+FONTCOLOR2 = (0, 255, 255)
 
 loop = 0
 tstart = calendar.timegm(time.gmtime())
 rl = modoscrape.RatioLocator()
 dl = modoscrape.DialogueLocator()
+cl = modoscrape.ClickableLocator()
 c = modoscrape.Config()
+Tools.showDisabled = True
 
 while (True):
 
@@ -34,24 +37,12 @@ while (True):
     for b in button_locations:
         if button_locations[b]:
             bx, by = button_locations[b]
-            cv2.putText(numpygrab, 'b_' + b, (bx + PAD, by - boffset * 30), FONT, 1, FONTCOLOR, 2, cv2.LINE_AA)
-            cv2.putText(numpygrab, 'b_' + b, (bx + PAD + 2, by - boffset * 30 + 2), FONT, 1, FONTCOLOR2, 1, cv2.LINE_AA)
+            Tools.text(numpygrab, 'b_' + b, bx + 7, by - 7)
             boffset += 1
 
-    #print button_locations
-
-
-    # contours = rl.detect_borders(numpygrab)
-    #
-    # numpygrab = cv2.drawContours(numpygrab, contours, -1, (0, 255, 255), 4)
-    #
-    # for idx, vec in enumerate(contours):
-    #     x, y, w, h = cv2.boundingRect(vec)
-    #     cv2.putText(numpygrab, 'c' + str(idx), (x - PAD, y + PAD), FONT, 1, FONTCOLOR, 2, cv2.LINE_AA)
-    #
-    #     # cx, cy = lctr.contour_center(vec)
-    #     # label = "center {}x{}".format(cx, cy)
-    #     # cv2.putText(numpygrab, label, (x - PAD, y + PAD + PAD), FONT, 0.5, FONTCOLOR, 1, cv2.LINE_AA)
+    points = cl.clickable_loc(numpygrab)
+    for i, p in enumerate(points):
+        Tools.text(numpygrab, 'c_' + str(i), p[0], p[1])
 
     cv2.imshow('client capture', numpygrab)
 
@@ -63,7 +54,7 @@ while (True):
         break
 
     loop += 1
-    time.sleep(0.2)
+    time.sleep(0.5)
     print "loop iteration", loop
     if (loop % 10) == 0:
         dur =  calendar.timegm(time.gmtime()) - tstart

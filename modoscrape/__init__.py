@@ -55,6 +55,7 @@ class DialogueLocator:
 class ClickableLocator:
     def __init__(self):
         self.c = Config()
+        self.debug = True
 
     def sameish(self, v1, v2):
         if  v1 - v1 * 0.05 <= v2 <= v1 + v1 * 1.05:
@@ -72,20 +73,29 @@ class ClickableLocator:
 
     def clickable_loc(self, bgr):
         im0 = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
-        #graytest = im0.copy()
+        imdebug = bgr.copy()
+        #Tools.show('gray', im0)
 
-        # vertical, horizontal main active borders
+        # vertical, horizontal main active borders (hand)
         thresh_h = cv2.inRange(im0, 180, 184)
         thresh_v = cv2.inRange(im0, 198, 202)
 
-        im1 =  thresh_h + thresh_v
-        #Tools.show('binarized' , im1)
+        # vertical, horizontal main active borders (battlefield our side)
+        thresh_h_bfo = cv2.inRange(im0, 208, 212)
+        thresh_v_bfo = cv2.inRange(im0, 205, 209)
+
+        # vertical, horizontal main active borders (battlefield our side)
+        thresh_h_bfo2 = cv2.inRange(im0, 225, 229)
+        thresh_v_bfo2 = cv2.inRange(im0, 220, 224)
+
+        im1 =  thresh_h + thresh_v + thresh_h_bfo + thresh_v_bfo  + thresh_h_bfo2 + thresh_v_bfo2
+        Tools.show('binarized' , im1)
 
         # morphological op to enhance lines of min length
-        vk = np.ones((1, int(self.c.CLIENT_WIDTH * 0.03)), np.uint8)
+        vk = np.ones((1, int(self.c.CLIENT_WIDTH * 0.025)), np.uint8)
         erosion_vertical = cv2.erode(im1, vk, iterations=1)
         print
-        hk = np.ones((int(self.c.CLIENT_WIDTH * 0.03), 1), np.uint8)
+        hk = np.ones((int(self.c.CLIENT_WIDTH * 0.025), 1), np.uint8)
         erosion_horizontal = cv2.erode(im1, hk, iterations=1)
         im2 = erosion_vertical + erosion_horizontal
 
@@ -95,15 +105,20 @@ class ClickableLocator:
         # below it in a reasonable distance is another horizontal line, and if yes, we have our clickable
         # area
         im3, contours, hiera = cv2.findContours(im2, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        if self.debug:
+            cv2.drawContours(bgr, contours, -1, (0, 255, 255), 4)
 
 
         candidatecontours = []
         for idx, vec in enumerate(contours):
             aspect_ratio = Tools.contour_aspectratio(vec)
             x, y, w, h = cv2.boundingRect(vec)
-            if aspect_ratio > 50 and w > (self.c.CLIENT_WIDTH * 0.04):
-                print "contour ", idx, " looks like a top/bottom border.", aspect_ratio, w, y
+            if aspect_ratio > 50 and w > (self.c.CLIENT_WIDTH * 0.03):
+                print "contour ", idx, " looks like a top/bottom border.", aspect_ratio, w, x, y
                 candidatecontours.append(vec)
+            else:
+                print "contour ", idx, " skipped", aspect_ratio, w, x, y
+                pass
 
         click_points = []
         for idx, vec in enumerate(candidatecontours):
@@ -112,7 +127,7 @@ class ClickableLocator:
             for idx2, vec2 in enumerate(list(candidatecontours)):
                 x2, y2, w2, h2 = cv2.boundingRect(vec2)
                 print "   comp with ", idx2, x2, y2, w2, h2
-                print "   sameish ", self.sameish(x, x2),x, x2, " about ch", self.about_card_height(y, y2)
+                print "   sameish ", self.sameish(x, x2), x, x2, " about ch", self.about_card_height(y, y2), y, y2
                 if x == x2 and y == y2:
                     #print "skip comparison with self"
                     continue
@@ -125,9 +140,10 @@ class ClickableLocator:
                     break
 
 
-        bgr = cv2.drawContours(bgr, candidatecontours, -1, (0, 255, 255), 4)
-        for p in click_points:
-            cv2.circle(bgr, p, 10, (255, 0, 30), -1)
+        if self.debug:
+            for p in click_points:
+                cv2.circle(bgr, p, 10, (255, 0, 30), -1)
+
         Tools.show('ero', bgr)
 
         return click_points
@@ -243,10 +259,26 @@ class RatioLocator:
 
 
 class Tools:
+
+    showDisabled = False
+
+    @staticmethod
+    def text(img, text, x, y):
+
+        FONT = cv2.FONT_HERSHEY_COMPLEX
+        FONTCOLOR = (0, 0, 0)
+        FONTCOLOR2 = (0, 255, 255)
+
+        cv2.putText(img, text, (x, y), FONT, 1, FONTCOLOR, 3, cv2.LINE_AA)
+        cv2.putText(img, text, (x, y), FONT, 1, FONTCOLOR2, 1, cv2.LINE_AA)
+
     @staticmethod
     def show(t, img):
-        cv2.imshow(t, img)
-        cv2.waitKey(0)
+        if Tools.showDisabled:
+            return
+        else:
+            cv2.imshow(t, img)
+            cv2.waitKey(0)
 
     @staticmethod
     def contour_aspectratio(c):

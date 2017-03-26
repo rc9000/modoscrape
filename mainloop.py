@@ -18,8 +18,6 @@ c = modoscrape.Config()
 
 while (True):
 
-
-
     # modo client in this top left corner
     bbox = (c.CLIENT_X, c.CLIENT_Y, c.CLIENT_WIDTH, c.CLIENT_HEIGHT)
 
@@ -65,7 +63,7 @@ while (True):
         break
 
     loop += 1
-    #time.sleep(0.2)
+    time.sleep(0.2)
     print "loop iteration", loop
     if (loop % 10) == 0:
         dur =  calendar.timegm(time.gmtime()) - tstart

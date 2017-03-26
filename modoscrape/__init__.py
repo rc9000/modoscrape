@@ -13,23 +13,14 @@ class Config:
         self.CLIENT_Y = 0
 
 
-class Tools:
-
-    @staticmethod
-    def show(t, img):
-        cv2.imshow(t, img)
-        cv2.waitKey(0)
-
-
 class DialogueLocator:
-
     def __init__(self):
         self.c = Config()
 
     def dialogue_loc(self, bgr, button):
 
         # only use left 25% of screen, all buttons are there - quicker matching
-        # NOTE: its img[y: y + h, x: x + w]
+        # NOTE: slice params are img[y: y + h, x: x + w]
         bgrslice = bgr[0:self.c.CLIENT_HEIGHT, 0:int(self.c.CLIENT_WIDTH / 3)]
         img = cv2.cvtColor(bgrslice, cv2.COLOR_BGR2GRAY)
         templatefile = './img/template_' + button + '.png'
@@ -40,56 +31,110 @@ class DialogueLocator:
         res = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
         top_left = max_loc
-        #print button, " max val ", max_val, " at loc ", max_loc
-        #Tools.show('tm_coeff_normed', res)
+        # print button, " max val ", max_val, " at loc ", max_loc
+        # Tools.show('tm_coeff_normed', res)
 
         if (max_val > 0.999):
             return max_loc
         else:
             return False
 
-    # HSV based color segmentation
-    # def dialogue_center00(self, bgr):
-    #
-    #     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
-    #     lower_blue = np.array([110, 50, 50])
-    #     upper_blue = np.array([130, 255, 255])
-    #     mask = cv2.inRange(hsv, lower_blue, upper_blue)
-    #     res = cv2.bitwise_and(bgr, bgr, mask=mask)
-    #
-    #     Tools.show('blues', res)
-    #     return []
+            # HSV based color segmentation
+            # def dialogue_center00(self, bgr):
+            #
+            #     hsv = cv2.cvtColor(bgr, cv2.COLOR_BGR2HSV)
+            #     lower_blue = np.array([110, 50, 50])
+            #     upper_blue = np.array([130, 255, 255])
+            #     mask = cv2.inRange(hsv, lower_blue, upper_blue)
+            #     res = cv2.bitwise_and(bgr, bgr, mask=mask)
+            #
+            #     Tools.show('blues', res)
+            #     return []
 
 
 class ClickableLocator:
-
     def __init__(self):
         self.c = Config()
 
-    def dialogue_loc(self, bgr, button):
-
-        # only use left 25% of screen, all buttons are there - quicker matching
-        # NOTE: its img[y: y + h, x: x + w]
-        bgrslice = bgr[0:self.c.CLIENT_HEIGHT, 0:int(self.c.CLIENT_WIDTH / 3)]
-        img = cv2.cvtColor(bgrslice, cv2.COLOR_BGR2GRAY)
-        templatefile = './img/template_' + button + '.png'
-
-        template = cv2.imread(templatefile, cv2.IMREAD_GRAYSCALE)
-        w, h = template.shape[::-1]
-
-        res = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-        top_left = max_loc
-        #print button, " max val ", max_val, " at loc ", max_loc
-        #Tools.show('tm_coeff_normed', res)
-
-        if (max_val > 0.999):
-            return max_loc
+    def sameish(self, v1, v2):
+        if  v1 - v1 * 0.05 <= v2 <= v1 + v1 * 1.05:
+            return True
         else:
             return False
 
-class RatioLocator:
+    def about_card_height(self, y1, y2):
+        len = y2 - y1
+        # on 1080p, card is about 200-300px
+        if  self.c.CLIENT_HEIGHT / 7 <= len <= self.c.CLIENT_HEIGHT / 3:
+            return True
+        else:
+            return False
 
+    def clickable_loc(self, bgr):
+        im0 = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+        #graytest = im0.copy()
+
+        # vertical, horizontal main active borders
+        thresh_h = cv2.inRange(im0, 180, 184)
+        thresh_v = cv2.inRange(im0, 198, 202)
+
+        im1 =  thresh_h + thresh_v
+        #Tools.show('binarized' , im1)
+
+        # morphological op to enhance lines of min length
+        vk = np.ones((1, int(self.c.CLIENT_WIDTH * 0.03)), np.uint8)
+        erosion_vertical = cv2.erode(im1, vk, iterations=1)
+        print
+        hk = np.ones((int(self.c.CLIENT_WIDTH * 0.03), 1), np.uint8)
+        erosion_horizontal = cv2.erode(im1, hk, iterations=1)
+        im2 = erosion_vertical + erosion_horizontal
+
+        Tools.show('ero' , im2)
+
+        # now from this eroded images with little false positives, select the horizontal lines, check if
+        # below it in a reasonable distance is another horizontal line, and if yes, we have our clickable
+        # area
+        im3, contours, hiera = cv2.findContours(im2, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+
+        candidatecontours = []
+        for idx, vec in enumerate(contours):
+            aspect_ratio = Tools.contour_aspectratio(vec)
+            x, y, w, h = cv2.boundingRect(vec)
+            if aspect_ratio > 50 and w > (self.c.CLIENT_WIDTH * 0.04):
+                print "contour ", idx, " looks like a top/bottom border.", aspect_ratio, w, y
+                candidatecontours.append(vec)
+
+        click_points = []
+        for idx, vec in enumerate(candidatecontours):
+            x, y, w, h = cv2.boundingRect(vec)
+            print "candidatecontour ", idx, x, y, w, h, ", looking for matching other end"
+            for idx2, vec2 in enumerate(list(candidatecontours)):
+                x2, y2, w2, h2 = cv2.boundingRect(vec2)
+                print "   comp with ", idx2, x2, y2, w2, h2
+                print "   sameish ", self.sameish(x, x2),x, x2, " about ch", self.about_card_height(y, y2)
+                if x == x2 and y == y2:
+                    #print "skip comparison with self"
+                    continue
+                elif self.sameish(x, x2) and self.about_card_height(y, y2):
+
+                    click_x = x + int(w/2)
+                    click_y = y2 - int((y2 - y)/2)
+                    click_points.append((click_x, click_y))
+                    print "    match, point is ", click_x, click_y
+                    break
+
+
+        bgr = cv2.drawContours(bgr, candidatecontours, -1, (0, 255, 255), 4)
+        for p in click_points:
+            cv2.circle(bgr, p, 10, (255, 0, 30), -1)
+        Tools.show('ero', bgr)
+
+        return click_points
+
+
+
+class RatioLocator:
     def __init__(self):
         self.c = Config()
 
@@ -112,7 +157,7 @@ class RatioLocator:
         return [int((x + w) / 2), int((y + h) / 2)]
 
     def detect_borders(self, cv2im):
-        #im00 = cv2.imread('img/screen1.png')
+        # im00 = cv2.imread('img/screen1.png')
         im00 = cv2im
         im0 = im00.copy()
         im1 = im0.copy()
@@ -128,7 +173,7 @@ class RatioLocator:
         # show('canny', canny)
 
         imc, contours, hierarchy = cv2.findContours(canny, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-        #show('contours', imc)
+        # show('contours', imc)
 
         candidatecontours = []
         prunedcandidatecontours = []
@@ -145,7 +190,7 @@ class RatioLocator:
                     existing_bbox = cv2.boundingRect(vecc)
                     if (bbox == existing_bbox):
                         add = False
-                        #print "skip candidate ", idx, " same box as ", idxc
+                        # print "skip candidate ", idx, " same box as ", idxc
 
                 if add:
                     candidatecontours.append(vec)
@@ -153,7 +198,7 @@ class RatioLocator:
 
                     # if (parent_aspect_ratio > 0.68 and parent_aspect_ratio < 0.74):
                     #   candidatecontours.append(vec)
-        #print len(candidatecontours), " candidates"
+        # print len(candidatecontours), " candidates"
 
         # now go through all contours and only add these that are not enclosed in antoher one
         for idxi, veci in enumerate(candidatecontours):
@@ -174,10 +219,9 @@ class RatioLocator:
             if add:
                 prunedcandidatecontours.append(veci)
 
-
-        #i3 = cv2.drawContours(im00, prunedcandidatecontours, -1, (0, 255, 255), 1)
-        #show('candidate_contours', i3)
-        #cv2.destroyAllWindows()
+        # i3 = cv2.drawContours(im00, prunedcandidatecontours, -1, (0, 255, 255), 1)
+        # show('candidate_contours', i3)
+        # cv2.destroyAllWindows()
         return prunedcandidatecontours
 
     def union(self, a, b):
@@ -196,3 +240,36 @@ class RatioLocator:
             return True
         else:
             return False
+
+
+class Tools:
+    @staticmethod
+    def show(t, img):
+        cv2.imshow(t, img)
+        cv2.waitKey(0)
+
+    @staticmethod
+    def contour_aspectratio(c):
+        x, y, w, h = cv2.boundingRect(c)
+        aspect_ratio = float(w) / h
+        return aspect_ratio
+
+    @staticmethod
+    def contour_area(c):
+        x, y, w, h = cv2.boundingRect(c)
+        area = float(w) * h
+        return area
+
+    @staticmethod
+    def contour_center(c):
+        x, y, w, h = cv2.boundingRect(c)
+        return [int((x + w) / 2), int((y + h) / 2)]
+
+    @staticmethod
+    def union(a, b):
+        # a,b are cvContour
+        x = min(a[0], b[0])
+        y = min(a[1], b[1])
+        w = max(a[0] + a[2], b[0] + b[2]) - x
+        h = max(a[1] + a[3], b[1] + b[3]) - y
+        return (x, y, w, h)

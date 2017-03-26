@@ -5,6 +5,16 @@ import cv2
 
 c = modoscrape.Config()
 dl = modoscrape.DialogueLocator()
+cl = modoscrape.ClickableLocator()
+
+
+class TestClickableLocator(unittest.TestCase):
+
+    def test_easy_handcards(self):
+        # no yes button in this image
+        bgr = cv2.imread('img/screen12.PNG')
+        points = cl.clickable_loc(bgr)
+        self.assertEqual(len(points), 6)
 
 class TestDialogueLocator(unittest.TestCase):
 

@@ -6,14 +6,8 @@ import time
 import calendar
 from modoscrape import Tools
 
-FONT = cv2.FONT_HERSHEY_COMPLEX
-PAD = 7
-FONTCOLOR = (0, 0, 0)
-FONTCOLOR2 = (0, 255, 255)
-
 loop = 0
 tstart = calendar.timegm(time.gmtime())
-rl = modoscrape.RatioLocator()
 dl = modoscrape.DialogueLocator()
 cl = modoscrape.ClickableLocator()
 c = modoscrape.Config()
@@ -37,7 +31,7 @@ while (True):
     for b in button_locations:
         if button_locations[b]:
             bx, by = button_locations[b]
-            Tools.text(numpygrab, 'b_' + b, bx + 7, by - 7)
+            Tools.text(numpygrab, 'b_' + b, bx + 7, by - 7 - 30 * boffset)
             boffset += 1
 
     for t in ['hand', 'battlefield', 'attackers']:

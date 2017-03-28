@@ -25,7 +25,7 @@ while (True):
     buttons = ['yes', 'no', 'ok', 'cancel', 'keep',  'mulligan', 'done']
     button_locations = {}
     for d in buttons:
-        button_locations[d] = dl.dialogue_loc(numpygrab, d)
+        button_locations[d] = dl.locate(numpygrab, d)
 
     boffset = 1
     for b in button_locations:

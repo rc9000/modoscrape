@@ -6,6 +6,16 @@ import cv2
 c = modoscrape.Config()
 dl = modoscrape.DialogueLocator()
 cl = modoscrape.ClickableLocator()
+aol = modoscrape.ActiveObjectLocator()
+
+class TestActiveObjectLocator(unittest.TestCase):
+
+    def test_attackers(self):
+        # no yes button in this image
+        modoscrape.Tools.showDisabled = False
+        bgr = cv2.imread('img/screen17.PNG')
+        points = aol.locate(bgr)
+        self.assertEqual(len(points), 6)
 
 
 class TestClickableLocator(unittest.TestCase):
@@ -50,24 +60,24 @@ class TestDialogueLocator(unittest.TestCase):
     def test_yes_and_no(self):
         # no yes button in this image
         bgr = cv2.imread('img/screen10.PNG')
-        loc = dl.dialogue_loc(bgr, 'yes')
+        loc = dl.locate(bgr, 'yes')
         print "location: ", loc
         self.assertEqual(len(loc), 2, 'yes test')
-        loc = dl.dialogue_loc(bgr, 'no')
+        loc = dl.locate(bgr, 'no')
         print "location: ", loc
         self.assertEqual(len(loc), 2, 'no test')
 
     def test_yes_there(self):
         # find yes button
         bgr = cv2.imread('img/screen7.PNG')
-        loc = dl.dialogue_loc(bgr, 'yes')
+        loc = dl.locate(bgr, 'yes')
         print "location: ", loc
         self.assertEqual(len(loc), 2) and self.assertEqual(loc[1], 564)
 
     def test_yes_not_there(self):
         # no yes button in this image
         bgr = cv2.imread('img/screen1.PNG')
-        loc = dl.dialogue_loc(bgr, 'yes')
+        loc = dl.locate(bgr, 'yes')
         print "location: ", loc
         self.assertFalse(loc)
 

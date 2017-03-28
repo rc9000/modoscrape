@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
-
+import time
+import calendar
 
 class Config:
     def __init__(self):
@@ -11,13 +12,14 @@ class Config:
         self.CLIENT_HEIGHT = 1080
         self.CLIENT_X = 0
         self.CLIENT_Y = 0
+        self.MIN_CARD_WIDTH = int(self.CLIENT_WIDTH * 0.022)
 
 
 class DialogueLocator:
     def __init__(self):
         self.c = Config()
 
-    def dialogue_loc(self, bgr, button):
+    def locate(self, bgr, button):
 
         # only use left 25% of screen, all buttons are there - quicker matching
         # NOTE: slice params are img[y: y + h, x: x + w]
@@ -50,6 +52,72 @@ class DialogueLocator:
             #
             #     Tools.show('blues', res)
             #     return []
+
+
+class ActiveObjectLocator:
+    def __init__(self):
+        self.c = Config()
+        self.debug = True
+
+    def sameish(self, v1, v2):
+        if  v1 - v1 * 0.05 <= v2 <= v1 + v1 * 1.05:
+            return True
+        else:
+            return False
+
+    def about_card_height(self, y1, y2):
+        len = y2 - y1
+        # on 1080p, card is about 200-300px
+        if  self.c.CLIENT_HEIGHT / 7 <= len <= self.c.CLIENT_HEIGHT / 3:
+            return True
+        else:
+            return False
+
+    def active_borders_binimg(self, gray, rangehint):
+
+        rangematches = []
+
+        if rangehint == 'hand':
+            # vertical, horizontal main active borders (hand)
+            rangematches.append(cv2.inRange(gray, 180, 184))
+            rangematches.append(cv2.inRange(gray, 198, 202))
+
+        if rangehint == 'battlefield':
+            rangematches.append(cv2.inRange(gray, 208, 212))
+            rangematches.append(cv2.inRange(gray, 219, 224))
+            rangematches.append(cv2.inRange(gray, 214, 218))
+            rangematches.append(cv2.inRange(gray, 205, 209))
+
+        if rangehint == 'attackers':
+            rangematches.append(cv2.inRange(gray, 225, 229))
+            rangematches.append(cv2.inRange(gray, 220, 224 ))
+
+        im1 = sum(rangematches)
+        return im1
+
+    def locate(self, bgr):
+        im0 = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+        imdebug = bgr.copy()
+        Tools.show('gray', im0)
+
+        im1 = self.active_borders_binimg(im0, 'battlefield')
+        Tools.show('binarized' , im1)
+
+        # morphological op to enhance lines of min length
+        vk = np.ones((1, self.c.MIN_CARD_WIDTH), np.uint8)
+        erosion_vertical = cv2.erode(im1, vk, iterations=1)
+
+        hk = np.ones((self.c.MIN_CARD_WIDTH, 1), np.uint8)
+        erosion_horizontal = cv2.erode(im1, hk, iterations=1)
+        im2 = erosion_vertical + erosion_horizontal
+
+        Tools.show('ero', im2)
+
+        click_points = []
+        return click_points
+
+
+
 
 
 class ClickableLocator:
@@ -285,6 +353,10 @@ class Tools:
         if Tools.showDisabled:
             return
         else:
+            stamp = calendar.timegm(time.gmtime())
+            fname = 'E:/temp/im' + str(stamp) + ".png"
+            print "dump stored as " + fname
+            cv2.imwrite(fname, img)
             cv2.imshow(t, img)
             cv2.waitKey(0)
 

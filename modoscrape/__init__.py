@@ -13,6 +13,7 @@ class Config:
         self.CLIENT_X = 0
         self.CLIENT_Y = 0
         self.MIN_CARD_WIDTH = int(self.CLIENT_WIDTH * 0.022)
+        print "calculated values from width ", self.CLIENT_WIDTH, ": min_card_width ", self.MIN_CARD_WIDTH
 
 
 class DialogueLocator:
@@ -73,6 +74,14 @@ class ActiveObjectLocator:
         else:
             return False
 
+    def card_borders(self, gray):
+        im1 = gray.copy()
+        im1[im1 == 0] = 255
+        im1[im1 < 255] = 0
+        kernel = np.ones((2, 2), np.uint8)
+        erosion = cv2.erode(im1, kernel, iterations=2)
+        return erosion
+
     def active_borders_binimg(self, gray, rangehint):
 
         rangematches = []
@@ -87,10 +96,13 @@ class ActiveObjectLocator:
             rangematches.append(cv2.inRange(gray, 219, 224))
             rangematches.append(cv2.inRange(gray, 214, 218))
             rangematches.append(cv2.inRange(gray, 205, 209))
-
-        if rangehint == 'attackers':
+            rangematches.append(cv2.inRange(gray, 223, 227))
             rangematches.append(cv2.inRange(gray, 225, 229))
-            rangematches.append(cv2.inRange(gray, 220, 224 ))
+
+        # contained in bf
+        #if rangehint == 'attackers':
+        #    rangematches.append(cv2.inRange(gray, 225, 229))
+        #    rangematches.append(cv2.inRange(gray, 220, 224 ))
 
         im1 = sum(rangematches)
         return im1
@@ -112,6 +124,12 @@ class ActiveObjectLocator:
         im2 = erosion_vertical + erosion_horizontal
 
         Tools.show('ero', im2)
+
+        borders = self.card_borders(im0)
+        Tools.show('borders', borders)
+
+        active_overlap = cv2.bitwise_or(im2, borders)
+        Tools.show('overlap', active_overlap)
 
         click_points = []
         return click_points

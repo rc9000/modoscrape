@@ -7,6 +7,7 @@ c = modoscrape.Config()
 dl = modoscrape.DialogueLocator()
 cl = modoscrape.ClickableLocator()
 aol = modoscrape.ActiveObjectLocator()
+pl = modoscrape.PixelyLocator()
 
 class TestActiveObjectLocator(unittest.TestCase):
 
@@ -16,6 +17,16 @@ class TestActiveObjectLocator(unittest.TestCase):
         bgr = cv2.imread('img/screen17.PNG')
         points = aol.locate(bgr)
         self.assertEqual(len(points), 6)
+
+class TestPixelyLocator(unittest.TestCase):
+
+    def test_attackers(self):
+        # no yes button in this image
+        modoscrape.Tools.showDisabled = False
+        bgr = cv2.imread('img/screen23.PNG')
+        points = pl.locate(bgr)
+        self.assertEqual(len(points), 6)
+
 
 
 class TestClickableLocator(unittest.TestCase):

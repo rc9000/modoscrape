@@ -13,7 +13,7 @@ class Config:
         self.CLIENT_X = 0
         self.CLIENT_Y = 0
         self.MIN_CARD_WIDTH = int(self.CLIENT_WIDTH * 0.022)
-        print "calculated values from width ", self.CLIENT_WIDTH, ": min_card_width ", self.MIN_CARD_WIDTH
+        #print "calculated values from width ", self.CLIENT_WIDTH, ": min_card_width ", self.MIN_CARD_WIDTH
 
 
 class DialogueLocator:
@@ -54,6 +54,32 @@ class DialogueLocator:
             #     Tools.show('blues', res)
             #     return []
 
+class PixelyLocator:
+
+    def __init__(self):
+        self.c = Config()
+        self.debug = True
+
+    def locate(self, bgr):
+        im0 = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+
+        Tools.show('gray', im0)
+
+        mode = cv2.TM_CCOEFF_NORMED
+
+        k = ['right', 'left', 'top', 'bottom']
+        matches = {}
+        addimg = []
+
+        for side in k:
+            template = cv2.imread('./img/ab_' + side + '.png', cv2.IMREAD_GRAYSCALE)
+            matches[side] = cv2.matchTemplate(im0, template, mode)
+            v  = cv2.inRange(matches[side], 0.99, 1)
+            Tools.show(side, v)
+            addimg.append(v)
+
+        im1 = sum(addimg)
+        Tools.show('sum', im1)
 
 class ActiveObjectLocator:
     def __init__(self):

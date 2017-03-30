@@ -67,6 +67,7 @@ class PixelyLocator:
 
         mode = cv2.TM_CCOEFF_NORMED
 
+        tstart = int(round(time.time() * 1000))
         k = ['right', 'left', 'top', 'bottom']
         matches = {}
         addimg = []
@@ -74,11 +75,16 @@ class PixelyLocator:
         for side in k:
             template = cv2.imread('./img/ab_' + side + '.png', cv2.IMREAD_GRAYSCALE)
             matches[side] = cv2.matchTemplate(im0, template, mode)
-            v  = cv2.inRange(matches[side], 0.99, 1)
-            Tools.show(side, v)
+            v  = cv2.inRange(matches[side], 0.987, 100)
+            #Tools.show(side, v)
             addimg.append(v)
 
         im1 = sum(addimg)
+
+        tend = int(round(time.time() * 1000))
+        print "dur 4 matches: ", tstart, tend, tend - tstart
+
+
         Tools.show('sum', im1)
 
 class ActiveObjectLocator:

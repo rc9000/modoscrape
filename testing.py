@@ -24,6 +24,7 @@ class TestPixelyLocator(unittest.TestCase):
         # no yes button in this image
         modoscrape.Tools.showDisabled = False
         bgr = cv2.imread('img/screen23.PNG')
+        #bgr = cv2.imread('img/screen20.PNG')
         points = pl.locate(bgr)
         self.assertEqual(len(points), 6)
 

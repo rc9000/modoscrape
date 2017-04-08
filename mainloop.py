@@ -2,15 +2,19 @@ import numpy as np
 from PIL import ImageGrab
 import cv2
 import modoscrape
+import modoscrape.tools
+import modoscrape.locators
 import time
 import calendar
-from modoscrape import Tools
+
 
 loop = 0
 tstart = calendar.timegm(time.gmtime())
 dl = modoscrape.DialogueLocator()
 cl = modoscrape.ClickableLocator()
 c = modoscrape.Config()
+loc5 = modoscrape.locators.Locator5()
+Tools = modoscrape.tools.Tools()
 Tools.showDisabled = True
 
 while (True):
@@ -34,10 +38,14 @@ while (True):
             Tools.text(numpygrab, 'b_' + b, bx + 7, by - 7 - 30 * boffset)
             boffset += 1
 
-    for t in ['hand', 'battlefield', 'attackers']:
-        points = cl.clickable_loc(numpygrab, t)
-        for i, p in enumerate(points):
-            Tools.text(numpygrab, t[0:2] + str(i), p[0], p[1])
+    # for t in ['hand', 'battlefield', 'attackers']:
+    #     points = cl.clickable_loc(numpygrab, t)
+    #     for i, p in enumerate(points):
+    #         Tools.text(numpygrab, t[0:2] + str(i), p[0], p[1])
+
+    boxes5 = loc5.locate(numpygrab)
+    for box in boxes5:
+        cv2.drawContours(numpygrab, [box], -1, (0, 0, 255), 2)
 
     cv2.imshow('client capture', numpygrab)
 

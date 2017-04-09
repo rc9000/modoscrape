@@ -26,22 +26,26 @@ class Locator6:
         for idxb, bmv in enumerate(border_matches_v):
             #dil = cv2.dilate(bmv, np.ones((1, 3), np.uint8), iterations=4)
             #debug = debug + cv2.cvtColor(dil, cv2.COLOR_GRAY2BGR)
-            debug = debug + cv2.cvtColor(bmv, cv2.COLOR_GRAY2BGR)
+            px = cv2.cvtColor(bmv['dilpixels'], cv2.COLOR_GRAY2BGR)
+            debug = cv2.add(debug, px)
             #debug = debug + self.t.gray_to_marker_color(bmv)
         for idxc, cm in  enumerate(card_matches):
-            debug = debug + cv2.cvtColor(cm, cv2.COLOR_GRAY2BGR)
+            px = cv2.cvtColor(cm['pixels'], cv2.COLOR_GRAY2BGR)
+            debug = cv2.add(debug, px)
 
         self.t.show('applied labels&borders', debug)
 
         for idxb, bmv in enumerate(border_matches_v):
-
-            dk = np.ones((1, 3), np.uint8)
-            im3 = cv2.dilate(bmv, dk, iterations=2)
-
             for idxc, cm in  enumerate(card_matches):
-                print "foo"
-                # if a vertical border is close to a card match, consider this point clickable
-
+                #print idxb, "match with", idxc
+                overlap = cv2.bitwise_and(bmv['dilpixels'], cm['pixels'])
+                #bbin = cv2.threshold(bmv['dilpixels'], 200, 255, cv2.THRESH_BINARY)
+                #cbin = cv2.threshold(cm['pixels'], 200, 255, cv2.THRESH_BINARY)
+                #overlap = cv2.bitwise_and(bbin, cbin)
+                if (cv2.sumElems(overlap) == (0.0, 0.0, 0.0, 0.0)):
+                    pass
+                else:
+                    print "        --> ", idxb, "overlap", idxc, cv2.sumElems(overlap), "centroid", cm['centroid']
 
 
 
@@ -82,10 +86,14 @@ class Locator6:
                 likely_card = True
                 match = cv2.inRange(labels, label, label)
                 match[match >= 1] = 255
-                card_matches.append(match)
-
-
-
+                info = {'CC_STAT_WIDTH': stats[label, cv2.CC_STAT_WIDTH],
+                        'CC_STAT_HEIGHT': stats[label, cv2.CC_STAT_HEIGHT],
+                        'CC_STAT_TOP': stats[label, cv2.CC_STAT_TOP],
+                        'CC_STAT_LEFT': stats[label, cv2.CC_STAT_LEFT],
+                        'pixels': match,
+                        'centroid': centroids[label]
+                        }
+                card_matches.append(info)
 
         return card_matches
 
@@ -106,9 +114,9 @@ class Locator6:
         num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(im3, connectivity=8)
         #self.t.show('L6.3 conncomst', output)
 
-        border_matches = []
+        #border_matches = []
         border_matches_h = []
-        border_matches_v = []
+        #border_matches_v = []
         # iterate through all labels and find relevant items
         for label in range(1, num_labels):
             #print "cc: label ", label,  " ", stats[label, cv2.CC_STAT_WIDTH], " ",  stats[label, cv2.CC_STAT_HEIGHT]
@@ -116,18 +124,28 @@ class Locator6:
             short_side = min(stats[label, cv2.CC_STAT_WIDTH], stats[label, cv2.CC_STAT_HEIGHT])
             long_side = max(stats[label, cv2.CC_STAT_WIDTH], stats[label, cv2.CC_STAT_HEIGHT])
 
+
+
             if long_side > 20 and long_side < 300:
                 if short_side <= 4:
                     # TBD: maybe separate vertical / horizontal matches here already
                     print "cc: label ", label, " ", long_side, " x ", short_side, " : candidate at xy",  \
                         stats[label, cv2.CC_STAT_LEFT], " ", stats[label, cv2.CC_STAT_TOP]
                     match = cv2.inRange(labels, label, label)
-                    match[match >= 1] = 200
-                    border_matches.append(match)
+                    match[match >= 1] = 255
+                    #border_matches.append(match)
+                    dilmatch = cv2.dilate(match, np.ones((2, 2), np.uint8), iterations=4)
                     if stats[label, cv2.CC_STAT_WIDTH] == long_side:
-                        border_matches_h.append(match)
-                    else:
-                        border_matches_v.append(match)
+                        info = {'CC_STAT_WIDTH': stats[label, cv2.CC_STAT_WIDTH],
+                                'CC_STAT_HEIGHT': stats[label, cv2.CC_STAT_HEIGHT],
+                                'CC_STAT_TOP': stats[label, cv2.CC_STAT_TOP],
+                                'CC_STAT_LEFT': stats[label, cv2.CC_STAT_LEFT],
+                                'pixels': match,
+                                'dilpixels': dilmatch
+                                }
+                        border_matches_h.append(info)
+                    #else:
+                     #   border_matches_v.append(info)
 
         # only use horizontal for now
         return border_matches_h

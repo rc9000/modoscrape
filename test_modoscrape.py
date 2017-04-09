@@ -14,6 +14,7 @@ aol = modoscrape.ActiveObjectLocator()
 pl = modoscrape.PixelyLocator()
 tools = modoscrape.tools.Tools()
 loc5 = modoscrape.locators.Locator5()
+loc6 = modoscrape.locators.Locator6()
 
 # class TestActiveObjectLocator(unittest.TestCase):
 #
@@ -73,10 +74,18 @@ loc5 = modoscrape.locators.Locator5()
 #         self.assertEqual(len(pointsh), 2)
 
 
-class TestLocator5(unittest.TestCase):
+class TestLocator6(unittest.TestCase):
 
     def test_basic(self):
         tools.showDisabled = False
+        bgr = cv2.imread('img/screen5.PNG')
+        loc6.locate(bgr)
+
+
+class TestLocator5(unittest.TestCase):
+
+    def test_basic(self):
+        tools.showDisabled = True
         bgr = cv2.imread('img/screen23.PNG')
         cProfile.runctx('loc5.locate(bgr)', globals(), locals())
 

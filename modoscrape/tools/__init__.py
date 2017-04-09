@@ -87,3 +87,11 @@ class Tools:
                 if abs(xs[i] - xs[j]) >= maxx:
                     maxx = abs(xs[i] - xs[j])
         return maxx
+
+    @staticmethod
+    def gray_to_marker_color(gray):
+        marked = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+        marked[marked[:,:, 0] > 0] = 255
+        marked[marked[:,:, 1] > 0] = 255
+        marked[marked[:,:, 2] > 0] = 0
+        return marked

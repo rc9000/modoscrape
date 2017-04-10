@@ -76,10 +76,17 @@ loc6 = modoscrape.locators.Locator6()
 
 class TestLocator6(unittest.TestCase):
 
-    def test_basic(self):
-        tools.showDisabled = False
+    def test_screen5(self):
+        tools.showDisabled = True
         bgr = cv2.imread('img/screen5.PNG')
-        loc6.locate(bgr)
+        card_centroids = loc6.locate(bgr)
+        self.assertEqual(len(card_centroids), 3, 'unexpected amount of matches')
+
+    def test_screen27(self):
+        tools.showDisabled = False
+        bgr = cv2.imread('img/screen27.PNG')
+        card_centroids = loc6.locate(bgr)
+        self.assertEqual(len(card_centroids), 9, 'unexpected amount of matches')
 
 
 class TestLocator5(unittest.TestCase):

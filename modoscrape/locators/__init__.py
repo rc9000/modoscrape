@@ -8,11 +8,12 @@ class Locator6:
     def __init__(self):
         self.c = modoscrape.Config()
         self.t = modoscrape.tools.Tools
-        self.debug = True
+        #self.t.showDisabled = True
+        self.debug = False
 
     def locate(self, bgr):
         debug = np.copy(bgr)
-        self.t.show('L6.0', bgr)
+        #self.t.show('L6.0', bgr)
         gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
 
         # get black/white card border conn comp
@@ -35,6 +36,7 @@ class Locator6:
 
         self.t.show('applied labels&borders', debug)
 
+        card_centroids = []
         for idxb, bmv in enumerate(border_matches_v):
             for idxc, cm in  enumerate(card_matches):
                 #print idxb, "match with", idxc
@@ -46,20 +48,10 @@ class Locator6:
                     pass
                 else:
                     print "        --> ", idxb, "overlap", idxc, cv2.sumElems(overlap), "centroid", cm['centroid']
+                    card_centroids.append(cm['centroid'])
 
 
-
-
-            #cardborders = cardborders + a
-            #self.t.show('apply label' + str(idx), cardborders)
-            #self.t.show('apply label' + str(idx), a)
-            #if (idx >= 5):
-            #    break
-
-        #self.t.show('applied labels', cardborders)
-        # overlay both
-
-
+        return card_centroids
 
     def border_threshold(self, gray):
         im1 = gray.copy()
@@ -100,7 +92,7 @@ class Locator6:
 
     def highlight_threshold(self, gray):
         im1 = gray.copy()
-        im2 = cv2.inRange(im1, 178, 240)
+        im2 = cv2.inRange(im1, 178, 248)
         self.t.show('L6.2 range', im2)
         # morphological op to enhance lines of min length
         vk = np.ones((1, self.c.MIN_CARD_WIDTH), np.uint8)

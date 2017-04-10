@@ -6,14 +6,16 @@ import modoscrape.tools
 import modoscrape.locators
 import time
 import calendar
+import math
 
 
 loop = 0
 tstart = calendar.timegm(time.gmtime())
 dl = modoscrape.DialogueLocator()
-cl = modoscrape.ClickableLocator()
+#cl = modoscrape.ClickableLocator()
 c = modoscrape.Config()
-loc5 = modoscrape.locators.Locator5()
+#loc5 = modoscrape.locators.Locator5()
+loc6 = modoscrape.locators.Locator6()
 Tools = modoscrape.tools.Tools()
 Tools.showDisabled = True
 
@@ -43,9 +45,11 @@ while (True):
     #     for i, p in enumerate(points):
     #         Tools.text(numpygrab, t[0:2] + str(i), p[0], p[1])
 
-    boxes5 = loc5.locate(numpygrab)
-    for box in boxes5:
-        cv2.drawContours(numpygrab, [box], -1, (0, 0, 255), 2)
+    card_centroids = loc6.locate(numpygrab)
+    for idx, centroid in enumerate(card_centroids):
+
+        ##cv2.drawContours(numpygrab, [box], -1, (0, 0, 255), 2)
+        Tools.text(numpygrab, 'c_' + str(idx), int(centroid[0]), int(centroid[1]))
 
     cv2.imshow('client capture', numpygrab)
 
@@ -57,10 +61,10 @@ while (True):
         break
 
     loop += 1
-    time.sleep(0.5)
+    time.sleep(0.1)
     print "loop iteration", loop
     if (loop % 10) == 0:
-        dur =  calendar.timegm(time.gmtime()) - tstart
+        dur = calendar.timegm(time.gmtime()) - tstart
         print "dur ", dur, (loop / dur), " fps"
 
 

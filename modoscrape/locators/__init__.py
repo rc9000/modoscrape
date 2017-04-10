@@ -74,7 +74,8 @@ class Locator6:
             # a upright card is about w 200 : h 280
             likely_card = False
             ratio = short_side / float(long_side)
-            if ratio > 0.68 and ratio < 0.74:
+            if ratio > 0.5 and ratio < 0.74:
+                print "card shape test: label ", label, "yes"
                 likely_card = True
                 match = cv2.inRange(labels, label, label)
                 match[match >= 1] = 255
@@ -92,7 +93,7 @@ class Locator6:
 
     def highlight_threshold(self, gray):
         im1 = gray.copy()
-        im2 = cv2.inRange(im1, 178, 248)
+        im2 = cv2.inRange(im1, 178, 240)
         self.t.show('L6.2 range', im2)
         # morphological op to enhance lines of min length
         vk = np.ones((1, self.c.MIN_CARD_WIDTH), np.uint8)

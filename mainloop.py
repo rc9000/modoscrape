@@ -12,9 +12,7 @@ import math
 loop = 0
 tstart = calendar.timegm(time.gmtime())
 dl = modoscrape.DialogueLocator()
-#cl = modoscrape.ClickableLocator()
 c = modoscrape.Config()
-#loc5 = modoscrape.locators.Locator5()
 loc6 = modoscrape.locators.Locator6()
 Tools = modoscrape.tools.Tools()
 Tools.showDisabled = True
@@ -40,15 +38,9 @@ while (True):
             Tools.text(numpygrab, 'b_' + b, bx + 7, by - 7 - 30 * boffset)
             boffset += 1
 
-    # for t in ['hand', 'battlefield', 'attackers']:
-    #     points = cl.clickable_loc(numpygrab, t)
-    #     for i, p in enumerate(points):
-    #         Tools.text(numpygrab, t[0:2] + str(i), p[0], p[1])
-
     card_centroids = loc6.locate(numpygrab)
     for idx, centroid in enumerate(card_centroids):
 
-        ##cv2.drawContours(numpygrab, [box], -1, (0, 0, 255), 2)
         Tools.text(numpygrab, 'c_' + str(idx), int(centroid[0]), int(centroid[1]))
 
     cv2.imshow('client capture', numpygrab)

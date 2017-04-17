@@ -11,7 +11,6 @@ import re
 from pprint import pprint
 import traceback
 
-
 loop = 1
 tstart = calendar.timegm(time.gmtime())
 dl = modoscrape.DialogueLocator()
@@ -20,8 +19,6 @@ cursor = modoscrape.SmartCursor()
 loc6 = modoscrape.locators.Locator6()
 Tools = modoscrape.tools.Tools()
 Tools.showDisabled = True
-
-
 
 def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations):
     tokens = cmd.split(" ")
@@ -35,6 +32,30 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations):
             Tools.fkey('F' + fn)
         else:
             print "ignored", tokens[0]
+
+    elif tokens[0] == "clickchoice":
+        mcard = re.search("^clickchoice (c)(\d+) (\d)", cmd)
+        print "mcard", mcard
+        if mcard:
+            prefix = mcard.group(1)
+            cardno = mcard.group(2)
+            choice = mcard.group(3)
+
+            # click multi-color land, planeswalker etc. option
+            # must keep the window active between the first and the second click,
+            # so this special command is required in single user mode
+            line_height = 28
+
+            try:
+                coord = card_centroids[int(cardno)]
+                print "clickchoice", prefix, cardno, choice
+                go_or_click("click", coord, cursor)
+                time.sleep(0.2)
+                go_or_click("click", (coord[0] + 10, coord[1] + 5 + (int(choice) - 1) * line_height), cursor)
+            except:
+                print "illegal card centroid, available:"
+                traceback.print_exc()
+                pprint(card_centroids)
 
     elif tokens[0] == "go" or tokens[0] == 'click':
         mdir = re.search("^([LRUD])(\d+)", tokens[1])
@@ -70,23 +91,30 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations):
 
         elif mbutton:
             prefix = mbutton.group(1)
-            buttonno = mbutton.group(2)
+            buttonname = mbutton.group(2)
+            pprint(button_locations)
 
             try:
-                coord = button_locations[int(buttonno)]
-                print "action with button", buttonno, coord
-                go_or_click(tokens[0], coord, cursor)
+                coord = button_locations[buttonname]
+                print "action with button", buttonname, coord
+                if not coord:
+                    print "unknown/not visible button", buttonname
+                    return
+                go_or_click(tokens[0], (coord[0] + 10, coord[1] + 10) , cursor, False)
             except:
                 print "illegal button"
                 traceback.print_exc()
+    else:
+        print "unknown command", tokens
 
 
-def go_or_click(action, coord, cursor):
+def go_or_click(action, coord, cursor, go_when_clicked=True):
 
     if action == "go":
         cursor.go(coord)
     elif action == 'click':
-        cursor.go(coord)
+        if go_when_clicked:
+            cursor.go(coord)
         Tools.mouseclick(coord)
 
 while (True):
@@ -98,7 +126,7 @@ while (True):
     numpygrab = np.asarray(pilgrab)
     numpygrab = cv2.cvtColor(numpygrab, cv2.COLOR_RGB2BGR)
 
-    buttons = ['yes', 'no', 'ok', 'cancel', 'keep',  'mulligan', 'done']
+    buttons = ['yes', 'no', 'ok', 'cancel', 'keep',  'mulligan', 'done', 'cmana']
     button_locations = {}
     for d in buttons:
         button_locations[d] = dl.locate(numpygrab, d)
@@ -122,10 +150,9 @@ while (True):
         cv2.destroyAllWindows()
         break
 
-
     time.sleep(0.1)
 
-    if len(button_locations) >= 1 and loop % 5 == 0:
+    if len(button_locations) >= 1 and loop % 3 == 0:
         cmd = raw_input("(single user) command? > ")
         do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations)
 

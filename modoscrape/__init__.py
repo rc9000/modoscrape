@@ -54,8 +54,8 @@ class SmartCursor:
         self.rely = 500
 
     def go(self, coord):
-        self.relx = coord[0]
-        self.rely = coord[1]
+        self.relx = int(coord[0])
+        self.rely = int(coord[1])
 
     def window_corners(self, bgr):
         img = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)

@@ -8,9 +8,11 @@ import time
 import calendar
 import math
 import re
+from pprint import pprint
+import traceback
 
 
-loop = 0
+loop = 1
 tstart = calendar.timegm(time.gmtime())
 dl = modoscrape.DialogueLocator()
 c = modoscrape.Config()
@@ -21,27 +23,71 @@ Tools.showDisabled = True
 
 
 
-def do_cmd(cmd, cursor, cursor_points):
+def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations):
     tokens = cmd.split(" ")
     print "executing", tokens
-    if tokens[0] == "go" or tokens[0] == 'click':
-        m = re.search("([LRUD])(\d+)", tokens[1])
-        direction = m.group(1)
-        index = m.group(2)
 
-        try:
-            coord = cursor_points[direction][int(index)]
-        except:
-            print "illegal cursor point"
-            return
+    if tokens[0].startswith('F'):
+        m = re.search("F(\d)", tokens[0])
+        fn = m.group(1)
+        if fn in ['2', '4', '6']:
+            print "press fkey", fn
+            Tools.fkey('F' + fn)
+        else:
+            print "ignored", tokens[0]
 
-        print "action with cursor point", direction, index, coord
+    elif tokens[0] == "go" or tokens[0] == 'click':
+        mdir = re.search("^([LRUD])(\d+)", tokens[1])
+        mcard = re.search("^(c)(\d+)", tokens[1])
+        mbutton = re.search("^(b)(\w+)", tokens[1])
 
-        if tokens[0] == "go":
-            cursor.go(coord)
-        elif tokens[0] == 'click':
-            cursor.go(coord)
-            Tools.mouseclick(coord)
+        pprint([mdir, mcard, mbutton])
+
+        if mdir:
+            direction = mdir.group(1)
+            index = mdir.group(2)
+
+            try:
+                coord = cursor_points[direction][int(index)]
+                print "action with cursor point", direction, index, coord
+                go_or_click(tokens[0], coord, cursor)
+            except:
+                print "illegal cursor point"
+                traceback.print_exc()
+
+        elif mcard:
+            prefix = mcard.group(1)
+            cardno = mcard.group(2)
+
+            try:
+                coord = card_centroids[int(cardno)]
+                print "action with card centroid", prefix, cardno, coord
+                go_or_click(tokens[0], coord, cursor)
+            except:
+                print "illegal card centroid, available:"
+                traceback.print_exc()
+                pprint(card_centroids)
+
+        elif mbutton:
+            prefix = mbutton.group(1)
+            buttonno = mbutton.group(2)
+
+            try:
+                coord = button_locations[int(buttonno)]
+                print "action with button", buttonno, coord
+                go_or_click(tokens[0], coord, cursor)
+            except:
+                print "illegal button"
+                traceback.print_exc()
+
+
+def go_or_click(action, coord, cursor):
+
+    if action == "go":
+        cursor.go(coord)
+    elif action == 'click':
+        cursor.go(coord)
+        Tools.mouseclick(coord)
 
 while (True):
 
@@ -79,9 +125,9 @@ while (True):
 
     time.sleep(0.1)
 
-    if len(button_locations) >= 1 and loop % 20 == 0:
+    if len(button_locations) >= 1 and loop % 5 == 0:
         cmd = raw_input("(single user) command? > ")
-        do_cmd(cmd, cursor, cursor_points)
+        do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations)
 
     loop += 1
     print "loop ", loop, "done"

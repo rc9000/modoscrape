@@ -10,15 +10,22 @@ class Tools:
 
     #showDisabled = True
     prev_ts = 0
-
+    autoit = "c:/Program Files (x86)/AutoIt3/AutoIt3.exe"
 
     @staticmethod
     def mouseclick(coord):
 
-        autoit = "c:/Program Files (x86)/AutoIt3/AutoIt3.exe"
-        cmd = '"' + autoit + '"' + ' autoit/click.au3 ' + str(coord[0]) + ' ' + str(coord[1])
+        cmd = '"' + Tools.autoit + '"' + ' autoit/click.au3 ' + str(coord[0]) + ' ' + str(coord[1])
         s = os.system(cmd)
         print cmd, s
+
+    @staticmethod
+    def fkey(k):
+
+        cmd = '"' + Tools.autoit + '"' + ' autoit/fkey.au3 ' + k
+        s = os.system(cmd)
+        print cmd, s
+
 
     @staticmethod
     def timestamp(text):
@@ -49,7 +56,7 @@ class Tools:
 
         FONT = cv2.FONT_HERSHEY_COMPLEX
         FONTCOLOR = (0, 0, 0)
-        FONTCOLOR2 = (0, 255, 255)
+        FONTCOLOR2 = (0, 220, 220)
 
         cv2.putText(img, text, (x, y), FONT, 1, FONTCOLOR, 2, cv2.LINE_AA)
         cv2.putText(img, text, (x, y), FONT, 1, FONTCOLOR2, 1, cv2.LINE_AA)

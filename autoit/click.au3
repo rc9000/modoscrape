@@ -3,9 +3,9 @@
 #include <Array.au3>
 #include <AutoItConstants.au3>
 
-Example()
+Click()
 
-Func Example()
+Func Click()
 
     Local $aWinList = WinList("[REGEXPTITLE:(?i)(.*modern*|.*legacy.*)]")
     ; _ArrayDisplay($aWinList)
@@ -13,9 +13,12 @@ Func Example()
     Local $x = $CmdLine[1]
 	Local $y = $CmdLine[2]
 
-	;click at 326, 861 (leftmost hand card)
 	Local $w = $aWinList[1][0]
-	WinActivate($w)
+
+	If Not WinActive($w) Then
+        WinActivate($w)
+    EndIf
+
 	MouseClick($MOUSE_CLICK_LEFT, $x, $y, 1, 1)
 
-EndFunc   ;==>Example
+EndFunc

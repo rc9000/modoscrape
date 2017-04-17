@@ -6,7 +6,7 @@
 Example()
 
 Func Example()
-    ; Retrieve a list of window handles using a regular expression. The regular expression looks for titles that contain the word SciTE or Internet Explorer.
+
     Local $aWinList = WinList("[REGEXPTITLE:(?i)(.*modern*|.*legacy.*)]")
     ; _ArrayDisplay($aWinList)
 

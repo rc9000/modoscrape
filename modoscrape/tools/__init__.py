@@ -2,11 +2,23 @@ import numpy as np
 import cv2
 import time
 import calendar
+import os
+
+showDisabled = True
 
 class Tools:
 
-    showDisabled = False
+    #showDisabled = True
     prev_ts = 0
+
+
+    @staticmethod
+    def mouseclick(coord):
+
+        autoit = "c:/Program Files (x86)/AutoIt3/AutoIt3.exe"
+        cmd = '"' + autoit + '"' + ' autoit/click.au3 ' + str(coord[0]) + ' ' + str(coord[1])
+        s = os.system(cmd)
+        print cmd, s
 
     @staticmethod
     def timestamp(text):
@@ -33,8 +45,19 @@ class Tools:
         cv2.putText(img, text, (x, y), FONT, 1, FONTCOLOR2, 1, cv2.LINE_AA)
 
     @staticmethod
+    def pointerlabel(img, text, x, y):
+
+        FONT = cv2.FONT_HERSHEY_COMPLEX
+        FONTCOLOR = (0, 0, 0)
+        FONTCOLOR2 = (0, 255, 255)
+
+        cv2.putText(img, text, (x, y), FONT, 1, FONTCOLOR, 2, cv2.LINE_AA)
+        cv2.putText(img, text, (x, y), FONT, 1, FONTCOLOR2, 1, cv2.LINE_AA)
+
+    @staticmethod
     def show(t, img):
-        if Tools.showDisabled:
+        global showDisabled
+        if showDisabled:
             return
         else:
             stamp = calendar.timegm(time.gmtime())
@@ -69,24 +92,6 @@ class Tools:
         w = max(a[0] + a[2], b[0] + b[2]) - x
         h = max(a[1] + a[3], b[1] + b[3]) - y
         return (x, y, w, h)
-
-    @staticmethod
-    def convert_for_bounding(coords):
-        nb_pts = len(coords[0])
-        coordz = np.zeros((nb_pts, 2))
-        for i in range(nb_pts):
-            coordz[i, :] = np.array([int(coords[0][i]), int(coords[1][i])])
-        return coordz
-
-    @staticmethod
-    # finding width and length of bounding boxes
-    def find_wid(xs):
-        maxx = 0
-        for i in range(4):
-            for j in range(i + 1, 4):
-                if abs(xs[i] - xs[j]) >= maxx:
-                    maxx = abs(xs[i] - xs[j])
-        return maxx
 
     @staticmethod
     def gray_to_marker_color(gray):

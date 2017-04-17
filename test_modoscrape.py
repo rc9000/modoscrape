@@ -13,20 +13,46 @@ tools = modoscrape.tools.Tools()
 loc6 = modoscrape.locators.Locator6()
 
 
+modoscrape.tools.showDisabled = False
+
+class TestSmartCursor(unittest.TestCase):
+
+    def test_corners(self):
+        cursor = modoscrape.SmartCursor()
+        modoscrape.tools.showDisabled = True
+        bgr = cv2.imread('img/screen30.PNG')
+        locprops = cursor.window_corners(bgr)
+        print locprops
+        self.assertEqual(locprops['centerx'], 962)
+        self.assertEqual(locprops['centery'], 515)
+
+    def test_draw(self):
+        cursor = modoscrape.SmartCursor()
+        bgr = cv2.imread('img/screen30.PNG')
+        modoscrape.tools.showDisabled = False
+        center = cursor.draw(bgr)
+
+    def test_draw2(self):
+        cursor = modoscrape.SmartCursor()
+        cursor.relx = 900
+        cursor.rely = 350
+        bgr = cv2.imread('img/screen30.PNG')
+        modoscrape.tools.showDisabled = False
+        center = cursor.draw(bgr)
 
 class TestLocator6(unittest.TestCase):
 
     def test_screen5(self):
-        tools.showDisabled = True
+        modoscrape.tools.showDisabled = True
         bgr = cv2.imread('img/screen5.PNG')
         card_centroids = loc6.locate(bgr)
         self.assertEqual(len(card_centroids), 3, 'unexpected amount of matches')
 
-    def test_screen27(self):
-        tools.showDisabled = False
-        bgr = cv2.imread('img/screen27.PNG')
+    def test_screen28(self):
+        modoscrape.tools.showDisabled = True
+        bgr = cv2.imread('img/screen28.PNG')
         card_centroids = loc6.locate(bgr)
-        self.assertEqual(len(card_centroids), 9, 'unexpected amount of matches')
+        self.assertEqual(len(card_centroids), 3, 'unexpected amount of matches')
 
 class TestDialogueLocator(unittest.TestCase):
 

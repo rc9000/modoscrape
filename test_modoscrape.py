@@ -99,6 +99,11 @@ class TestBleepBloop(unittest.TestCase):
         s = b.normalize_vote("go     l10")
         self.assertEqual(s, "go L10", 'normalisation failed, got ' + s)
 
+    def test_normalize_f(self):
+        b = modoscrape.chatbot.BleepBloop
+        s = b.normalize_vote("f2")
+        self.assertEqual(s, "F2", 'normalisation failed, got ' + s)
+
     def test_winner(self):
         b = modoscrape.chatbot.BleepBloop
 

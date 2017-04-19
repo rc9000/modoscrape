@@ -13,8 +13,8 @@ from pprint import pprint
 import traceback
 import threading
 
-loop = 1
-tstart = calendar.timegm(time.gmtime())
+
+
 dl = modoscrape.DialogueLocator()
 c = modoscrape.Config()
 cursor = modoscrape.SmartCursor()
@@ -23,13 +23,76 @@ Tools = modoscrape.tools.Tools()
 Tools.showDisabled = True
 #mode = 'singleuser'
 mode = 'irc'
+#mode = 'passive'
 
-def irc_vote():
 
-    return #FIXME: todo
-    #bot = modoscrape.chatbot.TestBot(c.channel, c.nickname, c.server, c.port)
-    #t1 = threading.Thread(target=bot.start)
-    #print "thread started", t1
+def main():
+
+    loop = 1
+    bot = False
+
+    if mode == 'irc':
+        bot = modoscrape.chatbot.BleepBloop()
+        bot_thread = threading.Thread(target=bot.start)
+        bot_thread.start()
+        time.sleep(3) # wait for irc connection
+
+    while (True):
+
+        # modo client in this top left corner
+        bbox = (c.CLIENT_X, c.CLIENT_Y, c.CLIENT_WIDTH, c.CLIENT_HEIGHT)
+
+        pilgrab = ImageGrab.grab(bbox)
+        numpygrab = np.asarray(pilgrab)
+        numpygrab = cv2.cvtColor(numpygrab, cv2.COLOR_RGB2BGR)
+
+        buttons = ['yes', 'no', 'ok', 'cancel', 'keep',  'mulligan', 'done', 'cmana']
+        button_locations = {}
+        for d in buttons:
+            button_locations[d] = dl.locate(numpygrab, d)
+
+        boffset = 1
+        for b in button_locations:
+            if button_locations[b]:
+                bx, by = button_locations[b]
+                Tools.text(numpygrab, 'b' + b, bx + 7, by - 7 - 30 * boffset)
+                boffset += 1
+
+        card_centroids = loc6.locate(numpygrab)
+        for idx, centroid in enumerate(card_centroids):
+            Tools.text(numpygrab, 'c' + str(idx), int(centroid[0]), int(centroid[1]))
+
+        cursor_points = cursor.draw(numpygrab)
+
+        cv2.imshow('client capture', numpygrab)
+
+        if cv2.waitKey(25) & 0xFF == ord('q'):
+            cv2.destroyAllWindows()
+            break
+
+        time.sleep(0.1)
+
+        if len(button_locations) >= 1 and loop % 5 == 0:
+
+            if mode == 'singleuser':
+                cmd = raw_input("(single user) command? > ")
+                do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations)
+            elif mode == 'irc':
+                # this should be async... just poll a flag in the bot if a vote is ongoing,
+                # and if there is a vote result available process it, then start a new vote
+                bot.start_vote()
+                time.sleep(c.vote_wait)
+                winner, sorted_tally = bot.end_vote()
+                do_cmd(winner, cursor, cursor_points, card_centroids, button_locations)
+            else:
+                # no voting, just run CV loop
+                pass
+
+
+        loop += 1
+        print "update cycle ", loop
+
+
 
 def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations):
     tokens = cmd.split(" ")
@@ -43,6 +106,10 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations):
             Tools.fkey('F' + fn)
         else:
             print "ignored", tokens[0]
+
+    elif tokens[0] == "pass":
+        print "pass until next update"
+        return
 
     elif tokens[0] == "clickchoice":
         mcard = re.search("^clickchoice (c)(\d+) (\d)", cmd)
@@ -128,53 +195,7 @@ def go_or_click(action, coord, cursor, go_when_clicked=True):
             cursor.go(coord)
         Tools.mouseclick(coord)
 
-while (True):
-
-    # modo client in this top left corner
-    bbox = (c.CLIENT_X, c.CLIENT_Y, c.CLIENT_WIDTH, c.CLIENT_HEIGHT)
-
-    pilgrab = ImageGrab.grab(bbox)
-    numpygrab = np.asarray(pilgrab)
-    numpygrab = cv2.cvtColor(numpygrab, cv2.COLOR_RGB2BGR)
-
-    buttons = ['yes', 'no', 'ok', 'cancel', 'keep',  'mulligan', 'done', 'cmana']
-    button_locations = {}
-    for d in buttons:
-        button_locations[d] = dl.locate(numpygrab, d)
-
-    boffset = 1
-    for b in button_locations:
-        if button_locations[b]:
-            bx, by = button_locations[b]
-            Tools.text(numpygrab, 'b' + b, bx + 7, by - 7 - 30 * boffset)
-            boffset += 1
-
-    card_centroids = loc6.locate(numpygrab)
-    for idx, centroid in enumerate(card_centroids):
-        Tools.text(numpygrab, 'c' + str(idx), int(centroid[0]), int(centroid[1]))
-
-    cursor_points = cursor.draw(numpygrab)
-
-    cv2.imshow('client capture', numpygrab)
-
-    if cv2.waitKey(25) & 0xFF == ord('q'):
-        cv2.destroyAllWindows()
-        break
-
-    time.sleep(0.1)
-
-    if len(button_locations) >= 1 and loop % 3 == 0:
-
-        if mode == 'singleuser':
-            cmd = raw_input("(single user) command? > ")
-            do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations)
-        elif mode == 'irc':
-            cmd = irc_vote()
-            do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations)
-
-    loop += 1
-    print "loop ", loop, "done"
 
 
-
-
+if __name__ == '__main__':
+        main()

@@ -24,6 +24,7 @@ class Config:
         self.nickname = 'zeroxtwoa'
         self.server = 'irc.chat.twitch.tv'
         self.port = 6667
+        self.vote_wait = 20
 
 class DialogueLocator:
     def __init__(self):

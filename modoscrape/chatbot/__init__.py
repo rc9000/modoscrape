@@ -53,7 +53,7 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
         if re.match("^echo", text):
             self.write(c, nick + ": screw you Kappa (for saying " + text + ")")
 
-        if re.match("^(click|go|F)", text, re.IGNORECASE):
+        if re.match("^(click |go |f\d+|pass|b)", text, re.IGNORECASE):
             self.votes[nick] = BleepBloop.normalize_vote(text)
 
 
@@ -62,10 +62,13 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
         c.privmsg(self.channel, self.bot_emote + ' ' +  msg)
 
     def start_vote(self):
+        # FIXME: update timestamp with start of vote
         self.votes = {}
         self.write(self.c, "Vote now for next action now!")
 
     def end_vote(self):
+        # fixme: change this to poll_vote or so, just return if vote is not terminated yet
+        # remove wait
         while len(self.votes) == 0:
             self.write(self.c, "still waiting for at least 1 vote")
             time.sleep(10)
@@ -91,6 +94,11 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
                 index = m.group(3)
                 direction = direction.upper()
                 str = cmd + " " + direction + "" + index
+
+        fm = re.search("^f(\d)$", str)
+        if fm:
+            fnumber = fm.group(1)
+            return 'F'+fnumber
 
         return str
 

@@ -44,3 +44,12 @@ Using F-keys is usually the best way to operate the client. Supported commands:
     F4
     F6
 
+## Other commands
+
+If the bot thinks there is an action to be taken, but it really isn't our turn to do something, vote `pass` to skip a cycle and get the next update from the mtgo client
+
+## Sorely missing
+
+    concede
+    gg, ghlf, salt chat commands
+

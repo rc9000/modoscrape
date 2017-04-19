@@ -4,12 +4,14 @@ import cv2
 import modoscrape
 import modoscrape.tools
 import modoscrape.locators
+import modoscrape.chatbot
 import time
 import calendar
 import math
 import re
 from pprint import pprint
 import traceback
+import threading
 
 loop = 1
 tstart = calendar.timegm(time.gmtime())
@@ -19,6 +21,15 @@ cursor = modoscrape.SmartCursor()
 loc6 = modoscrape.locators.Locator6()
 Tools = modoscrape.tools.Tools()
 Tools.showDisabled = True
+#mode = 'singleuser'
+mode = 'irc'
+
+def irc_vote():
+
+    return #FIXME: todo
+    #bot = modoscrape.chatbot.TestBot(c.channel, c.nickname, c.server, c.port)
+    #t1 = threading.Thread(target=bot.start)
+    #print "thread started", t1
 
 def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations):
     tokens = cmd.split(" ")
@@ -153,8 +164,13 @@ while (True):
     time.sleep(0.1)
 
     if len(button_locations) >= 1 and loop % 3 == 0:
-        cmd = raw_input("(single user) command? > ")
-        do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations)
+
+        if mode == 'singleuser':
+            cmd = raw_input("(single user) command? > ")
+            do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations)
+        elif mode == 'irc':
+            cmd = irc_vote()
+            do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations)
 
     loop += 1
     print "loop ", loop, "done"

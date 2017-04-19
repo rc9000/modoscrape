@@ -6,7 +6,7 @@ import modoscrape
 import modoscrape.tools
 import operator
 
-__all__ = ["tools", "locators"]
+__all__ = ["tools", "locators", "chatbot"]
 
 class Config:
     def __init__(self):
@@ -18,8 +18,12 @@ class Config:
         self.CLIENT_X = 0
         self.CLIENT_Y = 0
         self.MIN_CARD_WIDTH = int(self.CLIENT_WIDTH * 0.022)
-        #print "calculated values from width ", self.CLIENT_WIDTH, ": min_card_width ", self.MIN_CARD_WIDTH
 
+        #print "calculated values from width ", self.CLIENT_WIDTH, ": min_card_width ", self.MIN_CARD_WIDTH
+        self.channel = '#zeroxtwoa'
+        self.nickname = 'zeroxtwoa'
+        self.server = 'irc.chat.twitch.tv'
+        self.port = 6667
 
 class DialogueLocator:
     def __init__(self):

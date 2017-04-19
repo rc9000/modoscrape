@@ -4,11 +4,7 @@ import modoscrape.chatbot
 import threading
 import time
 
-channel = '#phyrexianviewbot'
-nickname = 'phyrexianviewbot'
-server = 'irc.chat.twitch.tv'
-port = 6667
-bot = modoscrape.chatbot.TestBot(channel, nickname, server, port)
+bot = modoscrape.chatbot.BleepBloop()
 t1 = threading.Thread(target=bot.start)
 t1.start()
 print "thread", t1

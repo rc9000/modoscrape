@@ -2,18 +2,17 @@ import unittest
 import modoscrape
 import modoscrape.tools
 import modoscrape.locators
+import modoscrape.chatbot
 import numpy as np
 import cv2
 import cProfile
-
 
 c = modoscrape.Config()
 dl = modoscrape.DialogueLocator()
 tools = modoscrape.tools.Tools()
 loc6 = modoscrape.locators.Locator6()
 
-
-modoscrape.tools.showDisabled = False
+modoscrape.tools.showDisabled = True
 
 class TestSmartCursor(unittest.TestCase):
 
@@ -29,7 +28,7 @@ class TestSmartCursor(unittest.TestCase):
     def test_draw(self):
         cursor = modoscrape.SmartCursor()
         bgr = cv2.imread('img/screen30.PNG')
-        modoscrape.tools.showDisabled = False
+        modoscrape.tools.showDisabled = True
         center = cursor.draw(bgr)
 
     def test_draw2(self):
@@ -37,7 +36,7 @@ class TestSmartCursor(unittest.TestCase):
         cursor.relx = 900
         cursor.rely = 350
         bgr = cv2.imread('img/screen30.PNG')
-        modoscrape.tools.showDisabled = False
+        modoscrape.tools.showDisabled = True
         center = cursor.draw(bgr)
 
 class TestLocator6(unittest.TestCase):
@@ -87,6 +86,42 @@ class TestTools(unittest.TestCase):
         contour = np.array([[[0, 0]], [[0, 10]], [[10,0]], [[10,10]]])
         ar = tools.contour_aspectratio(contour)
         self.assertEqual(ar, 1.0, 'square is not square')
+
+class TestBleepBloop(unittest.TestCase):
+
+    def test_normalize(self):
+        b = modoscrape.chatbot.BleepBloop
+        s = b.normalize_vote("CLICK   C7    ")
+        self.assertEqual(s, "click c7", 'normalisation failed')
+
+    def test_winner(self):
+        b = modoscrape.chatbot.BleepBloop
+
+        votes = {
+            'a': 'v1',
+            'b': 'v3',
+            'c': 'v3',
+            'd': 'v2',
+        }
+
+        winner = b.winning_vote(votes)
+        self.assertEqual(winner, "v3")
+
+    def test_winner_tied(self):
+        b = modoscrape.chatbot.BleepBloop
+
+        votes = {
+            'a': 'v1',
+            'b': 'v3',
+            'c': 'v3',
+            'e': 'v3',
+            'd': 'v2',
+            'f': 'v1',
+            'g': 'v1',
+        }
+
+        winner = b.winning_vote(votes)
+        self.assertIn(winner, ['v1', 'v3'])
 
 if __name__ == '__main__':
     unittest.main()

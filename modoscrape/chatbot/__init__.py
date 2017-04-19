@@ -1,22 +1,25 @@
-"""
-mostly copy/pasted from TestBot in the irc package
-"""
-
 import irc.bot
 import irc.strings
 import re
 import pprint
+import operator
+import random
 
 
-class TestBot(irc.bot.SingleServerIRCBot):
-    def __init__(self, channel, nickname, server, port=6667):
+class BleepBloop(irc.bot.SingleServerIRCBot):
+    def __init__(self):
 
         self.vote_time = 10
 
-        password = 'xxxxxx'
+        password = ''
         with open("e:/twitch-token.txt", "r") as f:
             data = f.readlines()
             password = data[0]
+
+        channel = '#phyrexianviewbot'
+        nickname = 'phyrexianviewbot'
+        server = 'irc.chat.twitch.tv'
+        port = 6667
 
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port, password)], nickname, nickname)
         self.channel = channel
@@ -49,8 +52,8 @@ class TestBot(irc.bot.SingleServerIRCBot):
         if re.match("^echo", text):
             self.write(c, nick + ": screw you Kappa (for saying " + text + ")")
 
-        if re.match("^(click|go|F)", text):
-            self.votes[nick] = text
+        if re.match("^(click|go|F)", text, re.IGNORECASE):
+            self.votes[nick] = BleepBloop.normalize_vote(text)
 
 
     def write(self, c, msg):
@@ -59,30 +62,42 @@ class TestBot(irc.bot.SingleServerIRCBot):
 
     def start_vote(self):
         self.votes = {}
-        self.write(self.c, "vote now for next action")
+        self.write(self.c, "Vote now for next action now!")
 
     def end_vote(self):
         self.write(self.c, "results:")
         self.write(self.c, pprint.pformat(self.votes))
         return self.votes
 
+    @staticmethod
+    def normalize_vote(str):
+        str = str.lower()
+        str = re.sub("\s+", " ", str)
+        str = re.sub("\s+$", "", str)
+        return str
+
+    @staticmethod
+    def winning_vote(votes):
+        tally = {}
+
+        for k in votes:
+            vote = votes[k]
+            if tally.has_key(vote):
+                tally[vote] += 1
+            else:
+                tally[vote] = 1
+
+        sorted_tally = sorted(tally.items(), key=operator.itemgetter(1), reverse=True)
+
+        max_votes = sorted_tally[0][1]
+        tied_votes = [k for k, v in tally.items() if v == max_votes]
+        winner = random.choice(tied_votes)
+        pprint.pprint(["votecount", sorted_tally, "ties ?", tied_votes, "winner (random pick)", winner])
+
+        return winner
 
 
 
 
 
 
-
-#
-# def main():
-#
-#     channel = '#zeroxtwoa'
-#     nickname = 'zeroxtwoa'
-#     server = 'irc.chat.twitch.tv'
-#     port = 6667
-#     bot = TestBot(channel, nickname, server, port)
-#     bot.start()
-#
-# if __name__ == "__main__":
-#     main()
-#

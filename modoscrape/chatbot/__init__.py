@@ -4,12 +4,14 @@ import re
 import pprint
 import operator
 import random
+import time
 
 
 class BleepBloop(irc.bot.SingleServerIRCBot):
     def __init__(self):
 
         self.vote_time = 10
+        self.bot_emote = 'tsmtgTKS'
 
         password = ''
         with open("e:/twitch-token.txt", "r") as f:
@@ -44,9 +46,8 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
         text = e.arguments[0]
         nick = e.source.nick
 
-        if re.match("^MrDestructiod", text):
+        if re.match("^" + self.bot_emote, text):
             # never respond to bot messages to prevent loops
-            # ignore nick for that even
             return
 
         if re.match("^echo", text):
@@ -58,22 +59,39 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
 
     def write(self, c, msg):
         print msg
-        c.privmsg(self.channel, 'MrDestructoid ' +  msg)
+        c.privmsg(self.channel, self.bot_emote + ' ' +  msg)
 
     def start_vote(self):
         self.votes = {}
         self.write(self.c, "Vote now for next action now!")
 
     def end_vote(self):
+        while len(self.votes) == 0:
+            self.write(self.c, "still waiting for at least 1 vote")
+            time.sleep(10)
+
+        winner, sorted_tally = BleepBloop.winning_vote(self.votes)
         self.write(self.c, "results:")
-        self.write(self.c, pprint.pformat(self.votes))
-        return self.votes
+        self.write(self.c, pprint.pformat(sorted_tally))
+        self.write(self.c, "winner chosen: " + winner)
+        return winner, sorted_tally
 
     @staticmethod
     def normalize_vote(str):
         str = str.lower()
         str = re.sub("\s+", " ", str)
         str = re.sub("\s+$", "", str)
+
+        # capitalize cursor directions
+        for ch in ['u', 'r', 'd', 'l']:
+            m = re.search("(.*) (" + ch + ")(\d+)", str)
+            if m:
+                cmd = m.group(1)
+                direction = m.group(2)
+                index = m.group(3)
+                direction = direction.upper()
+                str = cmd + " " + direction + "" + index
+
         return str
 
     @staticmethod
@@ -94,7 +112,7 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
         winner = random.choice(tied_votes)
         pprint.pprint(["votecount", sorted_tally, "ties ?", tied_votes, "winner (random pick)", winner])
 
-        return winner
+        return winner, sorted_tally
 
 
 

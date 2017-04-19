@@ -89,10 +89,15 @@ class TestTools(unittest.TestCase):
 
 class TestBleepBloop(unittest.TestCase):
 
-    def test_normalize(self):
+    def test_normalize_c(self):
         b = modoscrape.chatbot.BleepBloop
         s = b.normalize_vote("CLICK   C7    ")
         self.assertEqual(s, "click c7", 'normalisation failed')
+
+    def test_normalize_dir(self):
+        b = modoscrape.chatbot.BleepBloop
+        s = b.normalize_vote("go     l10")
+        self.assertEqual(s, "go L10", 'normalisation failed, got ' + s)
 
     def test_winner(self):
         b = modoscrape.chatbot.BleepBloop
@@ -104,7 +109,7 @@ class TestBleepBloop(unittest.TestCase):
             'd': 'v2',
         }
 
-        winner = b.winning_vote(votes)
+        winner, count = b.winning_vote(votes)
         self.assertEqual(winner, "v3")
 
     def test_winner_tied(self):
@@ -120,7 +125,7 @@ class TestBleepBloop(unittest.TestCase):
             'g': 'v1',
         }
 
-        winner = b.winning_vote(votes)
+        winner, count = b.winning_vote(votes)
         self.assertIn(winner, ['v1', 'v3'])
 
 if __name__ == '__main__':

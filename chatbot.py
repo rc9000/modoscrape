@@ -14,7 +14,7 @@ while True:
     time.sleep(5)
     bot.start_vote()
     time.sleep(10)
-    votes = bot.end_vote()
+    winner, sorted_tally = bot.end_vote()
     time.sleep(1)
 
 #bot.end()

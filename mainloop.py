@@ -12,6 +12,7 @@ import re
 from pprint import pprint
 import traceback
 import threading
+import random
 
 
 
@@ -72,7 +73,7 @@ def main():
 
         time.sleep(0.1)
 
-        if len(button_locations) >= 1 and loop % 5 == 0:
+        if len(button_locations) >= 1:   #and loop % 5 == 0:
 
             if mode == 'singleuser':
                 cmd = raw_input("(single user) command? > ")
@@ -80,17 +81,21 @@ def main():
             elif mode == 'irc':
                 # this should be async... just poll a flag in the bot if a vote is ongoing,
                 # and if there is a vote result available process it, then start a new vote
-                bot.start_vote()
-                time.sleep(c.vote_wait)
-                winner, sorted_tally = bot.end_vote()
-                do_cmd(winner, cursor, cursor_points, card_centroids, button_locations)
+
+                state = bot.state_check()
+                if (state == bot.STATE_RESULT_READY):
+                    winner, sorted_tally = bot.end_vote()
+                    do_cmd(winner, cursor, cursor_points, card_centroids, button_locations)
+
             else:
                 # no voting, just run CV loop
                 pass
 
 
         loop += 1
-        print "update cycle ", loop
+
+        if loop % 21 == 0:
+            print "cycle", loop, ":", random.choice(c.progress_msg)
 
 
 

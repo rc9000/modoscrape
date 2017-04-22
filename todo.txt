@@ -1,36 +1,3 @@
-
- - f2/f4/f6
- - missing text buttons: mana pool symbol, any order
- - smart cursor
-
-
- - smart cursor idea
-  - draw cursor on window, with a grid relative to cursor
-  - template match settings and close symbol to get position of window in capture
-  - allow fine movement close and broad movement far away
-
-
-Location items
-  - Cursor Locations:
-    - X: yellow center
-    - R1..Rn right
-    - L1..Ln left
-    - D1..Dn bottom
-    - U1..Un up
-
-   - Cards:
-    - cN
-
-   - Buttons:
-    - bN
-
-Actions
-
-   - F-Keys
-    - F2
-    - F4
-    - F6
-
-   - Interact with location items
-    - go <item> move cursor to coordinate
-    - click <item> single left click
+- sideboarding
+- click repeat n times
+- switch between play lobby, sideboarding and play

@@ -10,7 +10,13 @@ import time
 class BleepBloop(irc.bot.SingleServerIRCBot):
     def __init__(self):
 
-        self.vote_time = 10
+        self.STATE_AWAIT_STREAM_DELAY = 1
+        self.STATE_VOTING_ACTIVE = 2
+        self.STATE_RESULT_READY = 3
+
+        self.voting_active_time = 4
+        self.voting_await_stream_delay_time = 15
+
         self.bot_emote = 'tsmtgTKS'
 
         password = ''
@@ -26,6 +32,37 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port, password)], nickname, nickname)
         self.channel = channel
         self.votes = {}
+
+        self.state = self.STATE_AWAIT_STREAM_DELAY
+        self.state_entered = int(time.time())
+
+    def state_check(self):
+        now = int(time.time())
+
+        if self.state == self.STATE_AWAIT_STREAM_DELAY:
+            if now > self.state_entered + self.voting_await_stream_delay_time:
+                print "transition STATE_AWAIT_STREAM_DELAY > STATE_VOTING_ACTIVE";
+                self.state_entered = now
+                self.state = self.STATE_VOTING_ACTIVE
+                self.start_vote()
+            else:
+                print "state STATE_AWAIT_STREAM_DELAY"
+
+        elif self.state == self.STATE_VOTING_ACTIVE:
+            if (now > self.state_entered + self.voting_active_time) and len(self.votes) >= 1:
+                print "transition STATE_VOTING_ACTIVE > STATE_RESULT_READY"
+                self.state_entered = now
+                self.state = self.STATE_RESULT_READY
+            elif (now > self.state_entered + self.voting_active_time) and len(self.votes) == 0:
+                print "state STATE_VOTING_ACTIVE elapsed but no votes yet, await more"
+            else:
+                print "state STATE_VOTING_ACTIVE still in progress"
+
+        elif self.state == self.STATE_RESULT_READY:
+            print "state STATE_RESULT_READY, need to call end_vote to collect input"
+
+        return self.state
+
 
     def on_nicknameinuse(self, c, e):
         c.nick(c.get_nickname() + "_")
@@ -66,17 +103,28 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
         self.votes = {}
         self.write(self.c, "Vote now for next action now!")
 
-    def end_vote(self):
-        # fixme: change this to poll_vote or so, just return if vote is not terminated yet
-        # remove wait
-        while len(self.votes) == 0:
-            self.write(self.c, "still waiting for at least 1 vote")
-            time.sleep(10)
+    # def ___end_vote0000(self):
+    #     # fixme: change this to poll_vote or so, just return if vote is not terminated yet
+    #     # remove wait
+    #     while len(self.votes) == 0:
+    #         self.write(self.c, "still waiting for at least 1 vote")
+    #         time.sleep(10)
+    #
+    #     winner, sorted_tally = BleepBloop.winning_vote(self.votes)
+    #     self.write(self.c, "results:")
+    #     self.write(self.c, pprint.pformat(sorted_tally))
+    #     self.write(self.c, "winner chosen: " + winner)
+    #     return winner, sorted_tally
 
+
+    def end_vote(self):
         winner, sorted_tally = BleepBloop.winning_vote(self.votes)
         self.write(self.c, "results:")
         self.write(self.c, pprint.pformat(sorted_tally))
         self.write(self.c, "winner chosen: " + winner)
+        self.state_entered = int(time.time())
+        self.state = self.STATE_AWAIT_STREAM_DELAY
+        print "transition STATE_RESULT_READY > STATE_AWAIT_STREAM_DELAY"
         return winner, sorted_tally
 
     @staticmethod

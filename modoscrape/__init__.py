@@ -26,6 +26,15 @@ class Config:
         self.port = 6667
         self.vote_wait = 20
 
+        self.progress_msg = [
+            'randomizing /dev/null...',
+            'mining bitcoins...',
+            'pile shuffling...',
+            'mining salt...',
+            'rendering card backs...',
+            "analyzing opponent's basics..."
+        ]
+
 class DialogueLocator:
     def __init__(self):
         self.c = Config()

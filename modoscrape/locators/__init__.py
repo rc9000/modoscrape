@@ -3,13 +3,41 @@ import cv2
 import modoscrape
 import modoscrape.tools
 
+class DialogueLocator:
+    def __init__(self):
+        self.c = modoscrape.Config()
+        self.t = modoscrape.tools.Tools
+
+    def locate(self, bgr, button):
+
+        # only use left 25% of screen, all buttons are there - quicker matching
+        # NOTE: slice params are img[y: y + h, x: x + w]
+        bgrslice = bgr[0:self.c.CLIENT_HEIGHT, 0:int(self.c.CLIENT_WIDTH / 3)]
+        img = cv2.cvtColor(bgrslice, cv2.COLOR_BGR2GRAY)
+        templatefile = './img/template_' + button + '.png'
+
+        template = cv2.imread(templatefile, cv2.IMREAD_GRAYSCALE)
+        w, h = template.shape[::-1]
+
+        res = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
+        self.t.show('match', res)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+        top_left = max_loc
+
+        #print 'button', button, max_val, max_loc
+
+        if (max_val > 0.998):
+            return max_loc
+        else:
+            return False
+
 # Locator6: finds active cards that are not touching
 class Locator6:
 
     def __init__(self):
         self.c = modoscrape.Config()
         self.t = modoscrape.tools.Tools
-        self.t.showDisabled = False
+        self.t.showDisabled = True
         self.create_debug = True
 
     def locate(self, bgr):

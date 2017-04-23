@@ -15,15 +15,14 @@ import threading
 import random
 
 
-
-dl = modoscrape.DialogueLocator()
 c = modoscrape.Config()
-cursor = modoscrape.SmartCursor()
+dl = modoscrape.locators.DialogueLocator()
 loc6 = modoscrape.locators.Locator6()
+cursor = modoscrape.SmartCursor()
 Tools = modoscrape.tools.Tools()
 Tools.showDisabled = True
-#mode = 'singleuser'
-mode = 'irc'
+mode = 'singleuser'
+#mode = 'irc'
 #mode = 'passive'
 
 

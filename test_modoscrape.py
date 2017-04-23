@@ -8,8 +8,8 @@ import cv2
 import cProfile
 
 c = modoscrape.Config()
-dl = modoscrape.DialogueLocator()
 tools = modoscrape.tools.Tools()
+dl = modoscrape.locators.DialogueLocator()
 loc6 = modoscrape.locators.Locator6()
 
 modoscrape.tools.showDisabled = True
@@ -56,6 +56,7 @@ class TestLocator6(unittest.TestCase):
 class TestDialogueLocator(unittest.TestCase):
 
     def test_yes_and_no(self):
+        modoscrape.tools.showDisabled = True
         # no yes button in this image
         bgr = cv2.imread('img/screen10.PNG')
         loc = dl.locate(bgr, 'yes')
@@ -66,6 +67,7 @@ class TestDialogueLocator(unittest.TestCase):
         self.assertEqual(len(loc), 2, 'no test')
 
     def test_yes_there(self):
+        modoscrape.tools.showDisabled = True
         # find yes button
         bgr = cv2.imread('img/screen7.PNG')
         loc = dl.locate(bgr, 'yes')
@@ -73,11 +75,38 @@ class TestDialogueLocator(unittest.TestCase):
         self.assertEqual(len(loc), 2) and self.assertEqual(loc[1], 564)
 
     def test_yes_not_there(self):
+        modoscrape.tools.showDisabled = True
         # no yes button in this image
         bgr = cv2.imread('img/screen1.PNG')
         loc = dl.locate(bgr, 'yes')
         print "location: ", loc
         self.assertFalse(loc)
+
+    def test_begin_sideboarding(self):
+        modoscrape.tools.showDisabled = True
+        bgr = cv2.imread('img/screen36.PNG')
+        loc = dl.locate(bgr, 'sideboarding')
+        print "location: ", loc
+        self.assertEqual(len(loc), 2)
+        self.assertEqual(loc[0], 20)
+
+    def test_begin_sideboarding2(self):
+        # white background when the round ends on our turn
+        modoscrape.tools.showDisabled = True
+        bgr = cv2.imread('img/screen38.PNG')
+        loc = dl.locate(bgr, 'sideboarding')
+        print "location: ", loc
+        self.assertEqual(len(loc), 2)
+        self.assertEqual(loc[0], 14)
+
+    def test_submit_sideboard(self):
+        modoscrape.tools.showDisabled = True
+        bgr = cv2.imread('img/screen35.PNG')
+        loc = dl.locate(bgr, 'submit')
+        print "location: ", loc
+        self.assertEqual(len(loc), 2)
+        self.assertEqual(loc[0], 378)
+
 
 
 class TestTools(unittest.TestCase):

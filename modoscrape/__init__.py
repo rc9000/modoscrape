@@ -35,37 +35,15 @@ class Config:
             "analyzing opponent's basics..."
         ]
 
-class DialogueLocator:
-    def __init__(self):
-        self.c = Config()
 
-    def locate(self, bgr, button):
-
-        # only use left 25% of screen, all buttons are there - quicker matching
-        # NOTE: slice params are img[y: y + h, x: x + w]
-        bgrslice = bgr[0:self.c.CLIENT_HEIGHT, 0:int(self.c.CLIENT_WIDTH / 3)]
-        img = cv2.cvtColor(bgrslice, cv2.COLOR_BGR2GRAY)
-        templatefile = './img/template_' + button + '.png'
-
-        template = cv2.imread(templatefile, cv2.IMREAD_GRAYSCALE)
-        w, h = template.shape[::-1]
-
-        res = cv2.matchTemplate(img, template, cv2.TM_CCOEFF_NORMED)
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-        top_left = max_loc
-
-        if (max_val > 0.999):
-            return max_loc
-        else:
-            return False
 
 
 class SmartCursor:
     def __init__(self):
         self.c = Config()
         self.t = modoscrape.tools.Tools
-        self.relx = 500
-        self.rely = 500
+        self.relx = 1500
+        self.rely = 300
 
     def go(self, coord):
         self.relx = int(coord[0])

@@ -3,6 +3,81 @@ import cv2
 import modoscrape
 import modoscrape.tools
 
+class SideboardingLocator:
+
+    def __init__(self):
+        self.c = modoscrape.Config()
+        self.t = modoscrape.tools.Tools
+        self.t.showDisabled = True
+        self.create_debug = False
+
+    def locate(self, bgr):
+
+        gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+        card_matches = self.border_threshold(gray)
+
+        if self.create_debug:
+            debug = np.copy(bgr)
+            for idxc, cm in  enumerate(card_matches):
+                px = cv2.cvtColor(cm['pixels'], cv2.COLOR_GRAY2BGR)
+                debug = cv2.add(debug, px)
+
+            self.t.show('applied labels&borders', debug)
+
+        return card_matches
+
+    def border_threshold(self, gray):
+        im1 = gray.copy()
+        im1[im1 == 0] = 255
+        im1[im1 < 255] = 0
+        kernel = np.ones((2, 2), np.uint8)
+        erosion = cv2.erode(im1, kernel, iterations=2)
+
+        # negate black borders, giving white "islands" of card titles
+        # or full cards (bottome of stack)
+        negative = cv2.bitwise_not(erosion)
+        #self.t.show('neg', negative)
+
+        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(negative, connectivity=8)
+
+        card_matches = []
+        for label in range(1, num_labels):
+
+            short_side = min(stats[label, cv2.CC_STAT_WIDTH], stats[label, cv2.CC_STAT_HEIGHT])
+            long_side = max(stats[label, cv2.CC_STAT_WIDTH], stats[label, cv2.CC_STAT_HEIGHT])
+            area = short_side * long_side
+
+            # a card covered by cards stacked on top is arond 128 :  18
+            likely_card = False
+            ratio = short_side / float(long_side)
+            if (ratio > 0.68 and ratio < 0.74 and area > (100 * 220)) or (ratio > 0.12 and ratio < 0.16 and area > (10 * 140) ):
+
+                if self.create_debug:
+                    print "border_threshold: label ", label, " wh ", stats[label, cv2.CC_STAT_WIDTH], " ", stats[
+                        label, cv2.CC_STAT_HEIGHT], \
+                        " at xy ", stats[label, cv2.CC_STAT_LEFT], stats[label, cv2.CC_STAT_TOP]
+
+                #print "   label ", label, "yes"
+                likely_card = True
+                match = cv2.inRange(labels, label, label)
+                match[match >= 1] = 255
+                #dilmatch = cv2.dilate(match, np.ones((2, 2), np.uint8), iterations=4)
+                info = {'CC_STAT_WIDTH': stats[label, cv2.CC_STAT_WIDTH],
+                        'CC_STAT_HEIGHT': stats[label, cv2.CC_STAT_HEIGHT],
+                        'CC_STAT_TOP': stats[label, cv2.CC_STAT_TOP],
+                        'CC_STAT_LEFT': stats[label, cv2.CC_STAT_LEFT],
+                        'pixels': match,
+                        'labelid': label,
+                        'centroid': centroids[label]
+                        }
+                #print "match", info
+                card_matches.append(info)
+
+        return card_matches
+
+
+
+
 class DialogueLocator:
     def __init__(self):
         self.c = modoscrape.Config()

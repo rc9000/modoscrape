@@ -11,8 +11,18 @@ c = modoscrape.Config()
 tools = modoscrape.tools.Tools()
 dl = modoscrape.locators.DialogueLocator()
 loc6 = modoscrape.locators.Locator6()
+sbl = modoscrape.locators.SideboardingLocator()
 
 modoscrape.tools.showDisabled = True
+
+class TestSideboardingLocator(unittest.TestCase):
+
+    def test_screen37(self):
+        modoscrape.tools.showDisabled = True
+        bgr = cv2.imread('img/screen37.PNG')
+        card_centroids = sbl.locate(bgr)
+        self.assertGreaterEqual(len(card_centroids), 60, 'unexpected amount of matches ' + str(len(card_centroids)) )
+        self.assertLessEqual(len(card_centroids), 90, 'unexpected amount of matches ' + str(len(card_centroids)))
 
 class TestSmartCursor(unittest.TestCase):
 

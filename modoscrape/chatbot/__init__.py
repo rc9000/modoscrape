@@ -17,7 +17,8 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
         self.voting_active_time = 4
         self.voting_await_stream_delay_time = 15
 
-        self.bot_emote = 'tsmtgTKS'
+        #self.bot_emote = 'tsmtgTKS'
+        self.bot_emote = 'MrDestructoid'
 
         password = ''
         with open("e:/twitch-token.txt", "r") as f:

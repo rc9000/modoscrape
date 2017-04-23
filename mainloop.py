@@ -18,11 +18,12 @@ import random
 c = modoscrape.Config()
 dl = modoscrape.locators.DialogueLocator()
 loc6 = modoscrape.locators.Locator6()
+sbl = modoscrape.locators.SideboardingLocator()
 cursor = modoscrape.SmartCursor()
 Tools = modoscrape.tools.Tools()
 Tools.showDisabled = True
-mode = 'singleuser'
-#mode = 'irc'
+#mode = 'singleuser'
+mode = 'irc'
 #mode = 'passive'
 
 
@@ -49,6 +50,7 @@ def main():
         buttons = ['yes', 'no', 'ok', 'cancel',
                    'keep',  'mulligan', 'done', 'cmana',
                    'sideboarding', 'submit', 'lobby' ]
+
         button_locations = {}
         for d in buttons:
             button_locations[d] = dl.locate(numpygrab, d)
@@ -63,6 +65,17 @@ def main():
         card_centroids = loc6.locate(numpygrab)
         for idx, centroid in enumerate(card_centroids):
             Tools.text(numpygrab, 'c' + str(idx), int(centroid[0]), int(centroid[1]))
+
+        cursor_points = cursor.draw(numpygrab)
+
+        if button_locations['submit']:
+            sb_centroids = sbl.locate(numpygrab)
+            for idx, centroid in enumerate(sb_centroids):
+                xoff = 30
+                if idx % 2 == 0:
+                    xoff *=  -1
+                Tools.text(numpygrab, 's' + str(idx),  int(centroid[0]) + xoff, int(centroid[1]))
+
 
         cursor_points = cursor.draw(numpygrab)
 

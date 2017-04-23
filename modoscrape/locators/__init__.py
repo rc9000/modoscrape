@@ -24,7 +24,11 @@ class SideboardingLocator:
 
             self.t.show('applied labels&borders', debug)
 
-        return card_matches
+        centroids = {}
+        for m in card_matches:
+            centroids.append(m['centroid'])
+
+        return centroids
 
     def border_threshold(self, gray):
         im1 = gray.copy()

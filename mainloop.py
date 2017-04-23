@@ -77,7 +77,7 @@ def main():
             for idx, centroid in enumerate(sb_centroids):
                 xoff = 30
                 if idx % 2 == 0:
-                    xoff *=  -1
+                    xoff *= -1
                 Tools.text(numpygrab, 's' + str(idx),  int(centroid[0]) + xoff, int(centroid[1]))
 
 
@@ -106,6 +106,7 @@ def main():
                     do_cmd(winner, cursor, cursor_points, card_centroids, button_locations)
 
                 if loop % 30 == 0:
+                    print "updating viewer count..."
                     viewer_count = fetch_viewer_count()
 
             else:
@@ -225,7 +226,7 @@ def fetch_viewer_count():
     url = "https://tmi.twitch.tv/group/user/phyrexianviewbot/chatters"
     response = urllib.urlopen(url)
     data = json.loads(response.read())
-    print data, data['chatter_count']
+    print data['chatter_count']
     return int(data['chatter_count'])
 
 

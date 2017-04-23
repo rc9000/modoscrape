@@ -47,7 +47,9 @@ def main():
         numpygrab = np.asarray(pilgrab)
         numpygrab = cv2.cvtColor(numpygrab, cv2.COLOR_RGB2BGR)
 
-        buttons = ['yes', 'no', 'ok', 'cancel', 'keep',  'mulligan', 'done', 'cmana']
+        buttons = ['yes', 'no', 'ok', 'cancel',
+                   'keep',  'mulligan', 'done', 'cmana',
+                   'sideboarding', 'submit', 'lobby' ]
         button_locations = {}
         for d in buttons:
             button_locations[d] = dl.locate(numpygrab, d)

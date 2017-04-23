@@ -13,6 +13,8 @@ from pprint import pprint
 import traceback
 import threading
 import random
+import urllib
+import json
 
 
 c = modoscrape.Config()
@@ -31,12 +33,14 @@ def main():
 
     loop = 1
     bot = False
+    viewer_count = 1
 
     if mode == 'irc':
         bot = modoscrape.chatbot.BleepBloop()
         bot_thread = threading.Thread(target=bot.start)
         bot_thread.start()
         time.sleep(3) # wait for irc connection
+        viewer_count = fetch_viewer_count()
 
     while (True):
 
@@ -96,10 +100,13 @@ def main():
                 # this should be async... just poll a flag in the bot if a vote is ongoing,
                 # and if there is a vote result available process it, then start a new vote
 
-                state = bot.state_check()
+                state = bot.state_check(viewer_count)
                 if (state == bot.STATE_RESULT_READY):
                     winner, sorted_tally = bot.end_vote()
                     do_cmd(winner, cursor, cursor_points, card_centroids, button_locations)
+
+                if loop % 30 == 0:
+                    viewer_count = fetch_viewer_count()
 
             else:
                 # no voting, just run CV loop
@@ -214,6 +221,12 @@ def go_or_click(action, coord, cursor, go_when_clicked=True):
             cursor.go(coord)
         Tools.mouseclick(coord)
 
+def fetch_viewer_count():
+    url = "https://tmi.twitch.tv/group/user/phyrexianviewbot/chatters"
+    response = urllib.urlopen(url)
+    data = json.loads(response.read())
+    print data, data['chatter_count']
+    return int(data['chatter_count'])
 
 
 if __name__ == '__main__':

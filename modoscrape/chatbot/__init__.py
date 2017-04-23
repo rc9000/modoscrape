@@ -5,6 +5,7 @@ import pprint
 import operator
 import random
 import time
+import math
 
 
 class BleepBloop(irc.bot.SingleServerIRCBot):
@@ -15,10 +16,13 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
         self.STATE_RESULT_READY = 3
 
         self.voting_active_time = 4
-        self.voting_await_stream_delay_time = 15
+        self.voting_await_stream_delay_time = 2
+        self.viewer_count = 1
+        self.votes_needed_to_progress = 1
 
         #self.bot_emote = 'tsmtgTKS'
         self.bot_emote = 'MrDestructoid'
+
 
         password = ''
         with open("e:/twitch-token.txt", "r") as f:
@@ -37,8 +41,13 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
         self.state = self.STATE_AWAIT_STREAM_DELAY
         self.state_entered = int(time.time())
 
-    def state_check(self):
+    def state_check(self, viewer_count):
         now = int(time.time())
+
+        votes_needed_to_progress = max(int(math.ceil(viewer_count / 3)), 1)
+        self.votes_needed_to_progress = votes_needed_to_progress
+
+        #print "vntp =", votes_needed_to_progress
 
         if self.state == self.STATE_AWAIT_STREAM_DELAY:
             if now > self.state_entered + self.voting_await_stream_delay_time:
@@ -51,7 +60,11 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
 
         elif self.state == self.STATE_VOTING_ACTIVE:
             if (now > self.state_entered + self.voting_active_time) and len(self.votes) >= 1:
-                print "transition STATE_VOTING_ACTIVE > STATE_RESULT_READY"
+                print "transition STATE_VOTING_ACTIVE > STATE_RESULT_READY (vote time elapsed)"
+                self.state_entered = now
+                self.state = self.STATE_RESULT_READY
+            elif len(self.votes) >= votes_needed_to_progress:
+                print "transition STATE_VOTING_ACTIVE > STATE_RESULT_READY (enough votes)"
                 self.state_entered = now
                 self.state = self.STATE_RESULT_READY
             elif (now > self.state_entered + self.voting_active_time) and len(self.votes) == 0:
@@ -71,6 +84,18 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
     def on_welcome(self, c, e):
         c.join(self.channel)
         self.c = c
+        c.cap('LS')
+        c.cap('REQ', ':twitch.tv/membership')
+        c.cap('END')
+
+    def on_join(self, c, e):
+       pprint.pprint(["join", c, e])
+
+    def on_names(self, c, e):
+       pprint.pprint(["names", c, e])
+
+    def on_part(self, c, e):
+       pprint.pprint(["part", c, e])
 
     def end(self):
         print "end", self
@@ -83,6 +108,9 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
         print "e", e
         text = e.arguments[0]
         nick = e.source.nick
+
+        #viewers = c.names()
+        #pprint.pprint(['v_on_this_pub', viewers])
 
         if re.match("^" + self.bot_emote, text):
             # never respond to bot messages to prevent loops
@@ -102,7 +130,9 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
     def start_vote(self):
         # FIXME: update timestamp with start of vote
         self.votes = {}
-        self.write(self.c, "Vote now for next action now!")
+        self.write(self.c, "Vote for next action now! "
+                           "Progressing after {} seconds or {} votes."
+                   .format(self.voting_active_time, self.votes_needed_to_progress))
 
     # def ___end_vote0000(self):
     #     # fixme: change this to poll_vote or so, just return if vote is not terminated yet

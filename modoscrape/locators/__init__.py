@@ -24,7 +24,7 @@ class SideboardingLocator:
 
             self.t.show('applied labels&borders', debug)
 
-        centroids = {}
+        centroids = []
         for m in card_matches:
             centroids.append(m['centroid'])
 

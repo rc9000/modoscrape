@@ -134,20 +134,6 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
                            "Progressing after {} seconds or {} votes."
                    .format(self.voting_active_time, self.votes_needed_to_progress))
 
-    # def ___end_vote0000(self):
-    #     # fixme: change this to poll_vote or so, just return if vote is not terminated yet
-    #     # remove wait
-    #     while len(self.votes) == 0:
-    #         self.write(self.c, "still waiting for at least 1 vote")
-    #         time.sleep(10)
-    #
-    #     winner, sorted_tally = BleepBloop.winning_vote(self.votes)
-    #     self.write(self.c, "results:")
-    #     self.write(self.c, pprint.pformat(sorted_tally))
-    #     self.write(self.c, "winner chosen: " + winner)
-    #     return winner, sorted_tally
-
-
     def end_vote(self):
         winner, sorted_tally = BleepBloop.winning_vote(self.votes)
         self.write(self.c, "results:")

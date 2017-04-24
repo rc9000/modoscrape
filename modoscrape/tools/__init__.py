@@ -13,9 +13,15 @@ class Tools:
     autoit = "c:/Program Files (x86)/AutoIt3/AutoIt3.exe"
 
     @staticmethod
-    def mouseclick(coord):
+    def mouseclick(coord, double_click=False):
 
         cmd = '"' + Tools.autoit + '"' + ' autoit/click.au3 ' + str(coord[0]) + ' ' + str(coord[1])
+
+        if double_click:
+            cmd += ' 2'
+        else:
+            cmd += ' 1'
+
         s = os.system(cmd)
         print cmd, s
 

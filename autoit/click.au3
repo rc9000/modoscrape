@@ -12,6 +12,7 @@ Func Click()
 
     Local $x = $CmdLine[1]
 	Local $y = $CmdLine[2]
+	Local $nClick = $CmdLine[3]
 
 	If $aWinList[0][0] = 0  Then
 	    Return
@@ -23,9 +24,7 @@ Func Click()
         WinActivate($w)
     EndIf
 
-
-
-	MouseClick($MOUSE_CLICK_LEFT, $x, $y, 1, 1)
+	MouseClick($MOUSE_CLICK_LEFT, $x, $y, $nClick, 1)
 	MouseMove($x + 200, $y, 1) ; move mouse off button afterwards, so it doesn't get hover color
 
 EndFunc

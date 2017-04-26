@@ -13,7 +13,7 @@ class Tools:
     autoit = "c:/Program Files (x86)/AutoIt3/AutoIt3.exe"
 
     @staticmethod
-    def mouseclick(coord, double_click=False):
+    def mouseclick(coord, double_click, repeat):
 
         cmd = '"' + Tools.autoit + '"' + ' autoit/click.au3 ' + str(coord[0]) + ' ' + str(coord[1])
 
@@ -22,8 +22,10 @@ class Tools:
         else:
             cmd += ' 1'
 
+        cmd += ' ' + str(repeat)
+
         s = os.system(cmd)
-        print cmd, s
+        print cmd, "rv:", s
 
     @staticmethod
     def fkey(k):

@@ -24,8 +24,8 @@ sbl = modoscrape.locators.SideboardingLocator()
 cursor = modoscrape.SmartCursor()
 Tools = modoscrape.tools.Tools()
 Tools.showDisabled = True
-#mode = 'singleuser'
-mode = 'irc'
+mode = 'singleuser'
+#mode = 'irc'
 #mode = 'passive'
 
 
@@ -52,7 +52,8 @@ def main():
         numpygrab = cv2.cvtColor(numpygrab, cv2.COLOR_RGB2BGR)
 
         buttons = ['yes', 'no', 'ok', 'cancel',
-                   'keep',  'mulligan', 'done', 'cmana',
+                   'keep',  'mulligan', 'done',
+                   'cmana', 'rmana',
                    'sideboarding', 'submit', 'lobby' ]
 
         button_locations = {}
@@ -61,9 +62,10 @@ def main():
 
         boffset = 1
         for b in button_locations:
+
             if button_locations[b]:
                 bx, by = button_locations[b]
-                Tools.text(numpygrab, 'b' + b, bx + 7, by - 7 - 30 * boffset)
+                Tools.text(numpygrab, 'b' + b, bx + 7, by - 7 - 15 * boffset)
                 boffset += 1
 
         card_centroids = loc6.locate(numpygrab)
@@ -156,9 +158,9 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
             try:
                 coord = card_centroids[int(cardno)]
                 print "clickchoice", prefix, cardno, choice
-                go_or_click("click", coord, cursor, True, False)
+                go_or_click("click", coord, cursor, True, False, 1)
                 time.sleep(0.2)
-                go_or_click("click", (coord[0] + 10, coord[1] + 5 + (int(choice) - 1) * line_height), cursor, True, False)
+                go_or_click("click", (coord[0] + 10, coord[1] + 5 + (int(choice) - 1) * line_height), cursor, True, False, 1)
             except:
                 print "illegal card centroid, available:"
                 traceback.print_exc()
@@ -179,19 +181,19 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
             try:
                 coord = cursor_points[direction][int(index)]
                 print "action with cursor point", direction, index, coord
-                go_or_click(tokens[0], coord, cursor, True, False)
+                go_or_click(tokens[0], coord, cursor, True, False, 1)
             except:
                 print "illegal cursor point"
                 traceback.print_exc()
 
         elif msbcard:
-            prefix = mcard.group(1)
-            cardno = mcard.group(2)
+            prefix = msbcard.group(1)
+            cardno = msbcard.group(2)
 
             try:
                 coord = sb_centroids[int(cardno)]
                 print "action with sbcard centroid", prefix, cardno, coord
-                go_or_click(tokens[0], coord, cursor, True, True)
+                go_or_click(tokens[0], coord, cursor, True, True, 1)
             except:
                 print "illegal sbcard centroid, available:"
                 traceback.print_exc()
@@ -204,7 +206,7 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
             try:
                 coord = card_centroids[int(cardno)]
                 print "action with card centroid", prefix, cardno, coord
-                go_or_click(tokens[0], coord, cursor, True, False)
+                go_or_click(tokens[0], coord, cursor, True, False, 1)
             except:
                 print "illegal card centroid, available:"
                 traceback.print_exc()
@@ -213,15 +215,19 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
         elif mbutton:
             prefix = mbutton.group(1)
             buttonname = mbutton.group(2)
-            pprint(button_locations)
+            repeats = 1
+
+            if len(tokens) >= 3 and re.match("^\d+", tokens[2]):
+                print "repeat specified", repeats
+                repeats = tokens[2]
 
             try:
                 coord = button_locations[buttonname]
-                print "action with button", buttonname, coord
+                print "action with button", buttonname, coord, repeats
                 if not coord:
                     print "unknown/not visible button", buttonname
                     return
-                go_or_click(tokens[0], (coord[0] + 10, coord[1] + 10) , cursor, False, False)
+                go_or_click(tokens[0], (coord[0] + 10, coord[1] + 10), cursor, False, False, repeats)
             except:
                 print "illegal button"
                 traceback.print_exc()
@@ -229,14 +235,14 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
         print "unknown command", tokens
 
 
-def go_or_click(action, coord, cursor, go_when_clicked, double_click):
+def go_or_click(action, coord, cursor, go_when_clicked, double_click, repeat):
 
     if action == "go":
         cursor.go(coord)
     elif action == 'click':
         if go_when_clicked:
             cursor.go(coord)
-        Tools.mouseclick(coord, double_click)
+        Tools.mouseclick(coord, double_click, repeat)
 
 
 def fetch_viewer_count():

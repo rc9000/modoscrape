@@ -117,6 +117,14 @@ class TestDialogueLocator(unittest.TestCase):
         self.assertEqual(len(loc), 2)
         self.assertEqual(loc[0], 378)
 
+    def test_rmana(self):
+        modoscrape.tools.showDisabled = False
+        bgr = cv2.imread('img/screen40.PNG')
+        loc = dl.locate(bgr, 'rmana')
+        print "location: ", loc
+        self.assertEqual(len(loc), 2)
+        self.assertEqual(loc[0], 53)
+
 
 
 class TestTools(unittest.TestCase):

@@ -24,8 +24,8 @@ sbl = modoscrape.locators.SideboardingLocator()
 cursor = modoscrape.SmartCursor()
 Tools = modoscrape.tools.Tools()
 Tools.showDisabled = True
-mode = 'singleuser'
-#mode = 'irc'
+#mode = 'singleuser'
+mode = 'irc'
 #mode = 'passive'
 
 

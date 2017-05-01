@@ -107,6 +107,7 @@ def main():
                 state = bot.state_check(viewer_count)
                 if (state == bot.STATE_RESULT_READY):
                     winner, sorted_tally = bot.end_vote()
+                    print "cursor points going into do_cmd", cursor_points
                     do_cmd(winner, cursor, cursor_points, card_centroids, button_locations, sb_centroids)
 
                 if loop % 30 == 0:
@@ -168,6 +169,7 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
 
     elif tokens[0] == "go" or tokens[0] == 'click':
         mdir = re.search("^([LRUD])(\d+)", tokens[1])
+        mx = re.search("^X$", tokens[1])
         mcard = re.search("^(c)(\d+)", tokens[1])
         mbutton = re.search("^(b)(\w+)", tokens[1])
         msbcard = re.search("^(s)(\d+)", tokens[1])
@@ -182,6 +184,16 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
                 coord = cursor_points[direction][int(index)]
                 print "action with cursor point", direction, index, coord
                 go_or_click(tokens[0], coord, cursor, True, False, 1)
+            except:
+                print "illegal cursor point"
+                traceback.print_exc()
+
+        elif mx:
+            try:
+                print "points:", cursor_points
+                coord = cursor_points['X']
+                print "action with cursor X", coord
+                go_or_click(tokens[0], coord, cursor, False, False, 1)
             except:
                 print "illegal cursor point"
                 traceback.print_exc()

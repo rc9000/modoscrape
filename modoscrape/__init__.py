@@ -113,6 +113,7 @@ class SmartCursor:
         capturex = self.relx + locprops['bottomleftx']
         capturey = self.rely + locprops['toprighty']
         cursor_markers = {'X': (capturex, capturey), 'R': [], 'L': [], 'D': [], 'U': []}
+        default_diameter = 2
 
         self.draw_point(bgr, capturex, capturey, 4, (0, 255, 255))
 
@@ -127,7 +128,7 @@ class SmartCursor:
             else:
                 lastx = pointx
                 cursor_markers['R'].append((pointx, capturey))
-                self.draw_point(bgr, pointx, capturey, 4)
+                self.draw_point(bgr, pointx, capturey, default_diameter)
                 self.label_point(i, 'R', bgr, pointx, capturey)
 
         # add points to the left, geometrically increasing
@@ -139,7 +140,7 @@ class SmartCursor:
             else:
                 lastx = pointx
                 cursor_markers['L'].append((pointx, capturey))
-                self.draw_point(bgr, pointx, capturey, 4)
+                self.draw_point(bgr, pointx, capturey, default_diameter)
                 self.label_point(i, 'L', bgr, pointx, capturey)
 
         # add points downwards
@@ -151,7 +152,7 @@ class SmartCursor:
             else:
                 lasty = pointy
                 cursor_markers['D'].append((capturex, pointy))
-                self.draw_point(bgr, capturex, pointy, 4)
+                self.draw_point(bgr, capturex, pointy, default_diameter)
                 self.label_point(i, 'D', bgr, capturex, pointy)
 
         # add points upwards
@@ -163,7 +164,7 @@ class SmartCursor:
             else:
                 lasty = pointy
                 cursor_markers['U'].append((capturex, pointy))
-                self.draw_point(bgr, capturex, pointy, 4)
+                self.draw_point(bgr, capturex, pointy, default_diameter)
                 self.label_point(i, 'U', bgr, capturex, pointy)
 
 

@@ -119,7 +119,7 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
         if re.match("^echo", text):
             self.write(c, nick + ": screw you Kappa (for saying " + text + ")")
 
-        if re.match("^(click |go |f\d+|pass|b)", text, re.IGNORECASE):
+        if re.match("^(click |go |f\d+|pass)", text, re.IGNORECASE):
             self.votes[nick] = BleepBloop.normalize_vote(text)
 
 
@@ -159,6 +159,10 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
                 index = m.group(3)
                 direction = direction.upper()
                 str = cmd + " " + direction + "" + index
+
+        mx = re.search("(.*) x$", str)
+        if mx:
+            str = mx.group(1) + " X"
 
         fm = re.search("^f(\d)$", str)
         if fm:

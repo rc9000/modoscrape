@@ -1,3 +1,5 @@
-- sideboarding
-- click repeat n times
+- debug sideboarding
 - switch between play lobby, sideboarding and play
+- click x
+- click popup options (e.g. lotus petal)
+- eliminate almost duplicate card detections

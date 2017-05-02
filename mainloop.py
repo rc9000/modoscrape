@@ -173,8 +173,10 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
         mcard = re.search("^(c)(\d+)", tokens[1])
         mbutton = re.search("^(b)(\w+)", tokens[1])
         msbcard = re.search("^(s)(\d+)", tokens[1])
+        default_repeats = 0
 
         pprint([mdir, mcard, mbutton])
+
 
         if mdir:
             direction = mdir.group(1)
@@ -183,7 +185,7 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
             try:
                 coord = cursor_points[direction][int(index)]
                 print "action with cursor point", direction, index, coord
-                go_or_click(tokens[0], coord, cursor, True, False, 1)
+                go_or_click(tokens[0], coord, cursor, True, False, default_repeats)
             except:
                 print "illegal cursor point"
                 traceback.print_exc()
@@ -193,7 +195,7 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
                 print "points:", cursor_points
                 coord = cursor_points['X']
                 print "action with cursor X", coord
-                go_or_click(tokens[0], coord, cursor, False, False, 1)
+                go_or_click(tokens[0], coord, cursor, False, False, default_repeats)
             except:
                 print "illegal cursor point"
                 traceback.print_exc()
@@ -205,7 +207,7 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
             try:
                 coord = sb_centroids[int(cardno)]
                 print "action with sbcard centroid", prefix, cardno, coord
-                go_or_click(tokens[0], coord, cursor, True, True, 1)
+                go_or_click(tokens[0], coord, cursor, True, True, default_repeats)
             except:
                 print "illegal sbcard centroid, available:"
                 traceback.print_exc()
@@ -218,7 +220,7 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
             try:
                 coord = card_centroids[int(cardno)]
                 print "action with card centroid", prefix, cardno, coord
-                go_or_click(tokens[0], coord, cursor, True, False, 1)
+                go_or_click(tokens[0], coord, cursor, True, False, default_repeats)
             except:
                 print "illegal card centroid, available:"
                 traceback.print_exc()
@@ -227,11 +229,11 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
         elif mbutton:
             prefix = mbutton.group(1)
             buttonname = mbutton.group(2)
-            repeats = 1
+            repeats = 0
 
             if len(tokens) >= 3 and re.match("^\d+", tokens[2]):
                 print "repeat specified", repeats
-                repeats = tokens[2]
+                repeats = int(tokens[2] - 1)
 
             try:
                 coord = button_locations[buttonname]

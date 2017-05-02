@@ -25,6 +25,7 @@ Func Click()
         WinActivate($w)
     EndIf
 
+    ; seems to cause the double click effect
     For $i = 0 To $repeat
 	    MouseClick($MOUSE_CLICK_LEFT, $x, $y, $nClick, 1)
 	    Sleep(300)

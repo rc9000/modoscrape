@@ -11,9 +11,19 @@ c = modoscrape.Config()
 tools = modoscrape.tools.Tools()
 dl = modoscrape.locators.DialogueLocator()
 loc6 = modoscrape.locators.Locator6()
+pl = modoscrape.locators.PopupLocator()
 sbl = modoscrape.locators.SideboardingLocator()
 
 modoscrape.tools.showDisabled = True
+
+class TestPopupLocator(unittest.TestCase):
+
+    def test_screen42(self):
+        modoscrape.tools.showDisabled = True
+        bgr = cv2.imread('img/screen42.PNG')
+        option_centroids = pl.locate(bgr)
+        self.assertEqual(len(option_centroids), 7, 'unexpected amount of matches ' + str(len(option_centroids)) )
+
 
 class TestSideboardingLocator(unittest.TestCase):
 
@@ -62,6 +72,14 @@ class TestLocator6(unittest.TestCase):
         bgr = cv2.imread('img/screen28.PNG')
         card_centroids = loc6.locate(bgr)
         self.assertEqual(len(card_centroids), 3, 'unexpected amount of matches')
+
+    def test_screen43(self):
+        # trying to get rid of dupe matches on grisel and petal in these screens
+        modoscrape.tools.showDisabled = True
+        bgr = cv2.imread('img/screen43.PNG')
+        card_centroids = loc6.locate(bgr)
+        self.assertEqual(len(card_centroids), 3, 'unexpected amount of matches ' + str(len(card_centroids)))
+
 
 class TestDialogueLocator(unittest.TestCase):
 
@@ -118,7 +136,7 @@ class TestDialogueLocator(unittest.TestCase):
         self.assertEqual(loc[0], 378)
 
     def test_rmana(self):
-        modoscrape.tools.showDisabled = False
+        modoscrape.tools.showDisabled = True
         bgr = cv2.imread('img/screen40.PNG')
         loc = dl.locate(bgr, 'rmana')
         print "location: ", loc

@@ -3,6 +3,48 @@ import cv2
 import modoscrape
 import modoscrape.tools
 
+
+
+class PopupLocator:
+
+    def __init__(self):
+        self.c = modoscrape.Config()
+        self.t = modoscrape.tools.Tools
+        self.t.showDisabled = True
+        self.create_debug = False
+
+    def locate(self, bgr):
+        gray = cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY)
+
+        # match yellowish font pixels
+        bgr_range1 = cv2.inRange(bgr, np.array([124, 199, 235]), np.array([124, 199, 235]))
+        bgr_range2 = cv2.inRange(bgr, np.array([45, 69, 80]), np.array([45, 69, 80]))
+        bgr_range3 = cv2.inRange(bgr, np.array([84, 134, 158]), np.array([84, 134, 158]))
+        range_sum = cv2.add(bgr_range1, bgr_range2)
+        range_sum = cv2.add(range_sum, bgr_range3)
+
+        # dilate like crazy, but only in x direction
+        kernel =  np.array([[0,0],[1,1],[0,0]]);
+        dilated = cv2.dilate(range_sum, kernel.astype('uint8'), iterations=50)
+
+        self.t.show('bgr inRange', range_sum)
+        self.t.show('dilated', dilated)
+
+        num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(dilated, connectivity=8)
+        matches = []
+        for label in range(1, num_labels):
+
+            short_side = min(stats[label, cv2.CC_STAT_WIDTH], stats[label, cv2.CC_STAT_HEIGHT])
+            long_side = max(stats[label, cv2.CC_STAT_WIDTH], stats[label, cv2.CC_STAT_HEIGHT])
+            area = short_side * long_side
+
+            if (area > 600):
+                matches.append(centroids[label])
+
+        return matches
+
+
+
 class SideboardingLocator:
 
     def __init__(self):
@@ -74,7 +116,7 @@ class SideboardingLocator:
                         'labelid': label,
                         'centroid': centroids[label]
                         }
-                #print "match", info
+
                 card_matches.append(info)
 
         return card_matches
@@ -161,7 +203,7 @@ class Locator6:
                     pass
                     #print bmv['labelid'], "nomatch with", cm['labelid']
                 else:
-                    #print "        --> ", idxb, "overlap", idxc, cv2.sumElems(overlap), "centroid", cm['centroid']
+                    print "        --> ", idxb, "overlap", idxc, cv2.sumElems(overlap), "centroid", cm['centroid']
                     card_centroids.append(cm['centroid'])
 
 

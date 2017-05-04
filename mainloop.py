@@ -21,6 +21,7 @@ c = modoscrape.Config()
 dl = modoscrape.locators.DialogueLocator()
 loc6 = modoscrape.locators.Locator6()
 sbl = modoscrape.locators.SideboardingLocator()
+pl = modoscrape.locators.PopupLocator()
 cursor = modoscrape.SmartCursor()
 Tools = modoscrape.tools.Tools()
 Tools.showDisabled = True
@@ -87,6 +88,10 @@ def main():
 
         cursor_points = cursor.draw(numpygrab)
 
+        popup_centroids = pl.locate(numpygrab)
+        for idx, centroid in enumerate(popup_centroids):
+            Tools.text(numpygrab, 'p' + str(idx), int(centroid[0]), int(centroid[1]))
+
         cv2.imshow('client capture', numpygrab)
 
         if cv2.waitKey(25) & 0xFF == ord('q'):
@@ -99,7 +104,7 @@ def main():
 
             if mode == 'singleuser':
                 cmd = raw_input("(single user) command? > ")
-                do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_centroids)
+                do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_centroids, popup_centroids)
             elif mode == 'irc':
                 # this should be async... just poll a flag in the bot if a vote is ongoing,
                 # and if there is a vote result available process it, then start a new vote
@@ -108,7 +113,7 @@ def main():
                 if (state == bot.STATE_RESULT_READY):
                     winner, sorted_tally = bot.end_vote()
                     print "cursor points going into do_cmd", cursor_points
-                    do_cmd(winner, cursor, cursor_points, card_centroids, button_locations, sb_centroids)
+                    do_cmd(winner, cursor, cursor_points, card_centroids, button_locations, sb_centroids, popup_centroids)
 
                 if loop % 30 == 0:
                     print "updating viewer count..."
@@ -126,7 +131,7 @@ def main():
 
 
 
-def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_centroids):
+def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_centroids, popup_centroids):
     tokens = cmd.split(" ")
     print "executing", tokens
 
@@ -173,6 +178,7 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
         mcard = re.search("^(c)(\d+)", tokens[1])
         mbutton = re.search("^(b)(\w+)", tokens[1])
         msbcard = re.search("^(s)(\d+)", tokens[1])
+        mpopup = re.search("^(p)(\d+)", tokens[1])
         default_repeats = 0
 
         pprint([mdir, mcard, mbutton])
@@ -225,6 +231,20 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
                 print "illegal card centroid, available:"
                 traceback.print_exc()
                 pprint(card_centroids)
+
+        elif mpopup:
+            prefix = mpopup.group(1)
+            optno = mpopup.group(2)
+
+            try:
+                coord = popup_centroids[int(optno)]
+                print "action with popup option", prefix, optno, coord
+                go_or_click(tokens[0], coord, cursor, True, False, default_repeats)
+            except:
+                print "illegal popup centroid, available:"
+                traceback.print_exc()
+                pprint(popup_centroids)
+
 
         elif mbutton:
             prefix = mbutton.group(1)

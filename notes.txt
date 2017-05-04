@@ -1,0 +1,6 @@
+default chat message to warn people:
+Sorry it's so slow. You're playing against a "Twitch Plays" experiment at http://www.twitch.tv/phyrexianviewbot
+
+records:
+all time record: 0-5
+match loss to time: 4

@@ -1,5 +1,4 @@
-- debug sideboarding
 - switch between play lobby, sideboarding and play
-- click x
-- click popup options (e.g. lotus petal)
+- concede vote
 - eliminate almost duplicate card detections
+

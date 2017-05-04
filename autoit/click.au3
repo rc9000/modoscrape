@@ -31,6 +31,7 @@ Func Click()
 	    Sleep(300)
     Next
 
-	MouseMove($x + 200, $y, 1) ; move mouse off button afterwards, so it doesn't get hover color
+	;MouseMove($x + 200, $y, 1) ; move mouse off button afterwards, so it doesn't get hover color
+	MouseMove(0, 0, 1) ; move mouse off button afterwards, so it doesn't get hover color
 
 EndFunc

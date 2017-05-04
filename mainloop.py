@@ -129,6 +129,8 @@ def main():
         if loop % 21 == 0:
             print "cycle", loop, ":", random.choice(c.progress_msg)
 
+        time.sleep(0.2)
+
 
 
 def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_centroids, popup_centroids):
@@ -213,7 +215,7 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
             try:
                 coord = sb_centroids[int(cardno)]
                 print "action with sbcard centroid", prefix, cardno, coord
-                go_or_click(tokens[0], coord, cursor, True, True, default_repeats)
+                go_or_click(tokens[0], coord, cursor, False, True, default_repeats)
             except:
                 print "illegal sbcard centroid, available:"
                 traceback.print_exc()
@@ -226,7 +228,7 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
             try:
                 coord = card_centroids[int(cardno)]
                 print "action with card centroid", prefix, cardno, coord
-                go_or_click(tokens[0], coord, cursor, True, False, default_repeats)
+                go_or_click(tokens[0], coord, cursor, False, False, default_repeats)
             except:
                 print "illegal card centroid, available:"
                 traceback.print_exc()
@@ -239,7 +241,7 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
             try:
                 coord = popup_centroids[int(optno)]
                 print "action with popup option", prefix, optno, coord
-                go_or_click(tokens[0], coord, cursor, True, False, default_repeats)
+                go_or_click(tokens[0], coord, cursor, False, False, default_repeats)
             except:
                 print "illegal popup centroid, available:"
                 traceback.print_exc()
@@ -253,7 +255,7 @@ def do_cmd(cmd, cursor, cursor_points, card_centroids, button_locations, sb_cent
 
             if len(tokens) >= 3 and re.match("^\d+", tokens[2]):
                 print "repeat specified", repeats
-                repeats = int(tokens[2] - 1)
+                repeats = int(tokens[2]) - 1
 
             try:
                 coord = button_locations[buttonname]

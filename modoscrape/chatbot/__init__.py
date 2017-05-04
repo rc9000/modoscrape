@@ -15,8 +15,8 @@ class BleepBloop(irc.bot.SingleServerIRCBot):
         self.STATE_VOTING_ACTIVE = 2
         self.STATE_RESULT_READY = 3
 
-        self.voting_active_time = 7
-        self.voting_await_stream_delay_time = 10
+        self.voting_active_time = 5
+        self.voting_await_stream_delay_time = 2
         self.viewer_count = 1
         self.votes_needed_to_progress = 1
 

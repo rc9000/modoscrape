@@ -78,7 +78,7 @@ class TestLocator6(unittest.TestCase):
         modoscrape.tools.showDisabled = True
         bgr = cv2.imread('img/screen43.PNG')
         card_centroids = loc6.locate(bgr)
-        self.assertEqual(len(card_centroids), 3, 'unexpected amount of matches ' + str(len(card_centroids)))
+        self.assertEqual(len(card_centroids), 4, 'unexpected amount of matches ' + str(len(card_centroids)))
 
 
 class TestDialogueLocator(unittest.TestCase):
@@ -135,13 +135,21 @@ class TestDialogueLocator(unittest.TestCase):
         self.assertEqual(len(loc), 2)
         self.assertEqual(loc[0], 378)
 
-    def test_rmana(self):
-        modoscrape.tools.showDisabled = True
-        bgr = cv2.imread('img/screen40.PNG')
+    # def test_rmana(self):
+    #     modoscrape.tools.showDisabled = True
+    #     bgr = cv2.imread('img/screen40.PNG')
+    #     loc = dl.locate(bgr, 'rmana')
+    #     print "location: ", loc
+    #     self.assertEqual(len(loc), 2)
+    #     self.assertEqual(loc[0], 53)
+
+    def test_rmana2(self):
+        modoscrape.tools.showDisabled = False
+        bgr = cv2.imread('img/screen44.PNG')
         loc = dl.locate(bgr, 'rmana')
         print "location: ", loc
         self.assertEqual(len(loc), 2)
-        self.assertEqual(loc[0], 53)
+        self.assertEqual(loc[0], 107)
 
 
 

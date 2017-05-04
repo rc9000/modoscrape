@@ -185,6 +185,7 @@ class Locator6:
             self.t.show('applied labels&borders', debug)
 
         card_centroids = []
+        seen = {}
         for idxb, bmv in enumerate(border_matches_v):
             for idxc, cm in  enumerate(card_matches):
 
@@ -203,8 +204,14 @@ class Locator6:
                     pass
                     #print bmv['labelid'], "nomatch with", cm['labelid']
                 else:
-                    print "        --> ", idxb, "overlap", idxc, cv2.sumElems(overlap), "centroid", cm['centroid']
-                    card_centroids.append(cm['centroid'])
+                    #print "        --> ", idxb, "overlap", idxc, cv2.sumElems(overlap), "centroid", cm['centroid']
+                    centroid_key = (int(cm['centroid'][0]), int(cm['centroid'][1]))
+
+                    if seen.get(centroid_key, 0) == 0:
+                        card_centroids.append(centroid_key)
+                        seen[centroid_key] = 1
+                        #print "added", centroid_key
+
 
 
         return card_centroids
